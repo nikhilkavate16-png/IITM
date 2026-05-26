@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IITM Observation Portal</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>IITM Observational Facilities Portal</h1>
+        <p>Interactive Map of IITM Observation Instruments</p>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <h2>Instrument List</h2>
+
+            <!-- Search -->
+            <input type="text"
+                   id="searchInput"
+                   placeholder="🔍 Search instrument...">
+
+            <!-- Filter Button -->
+            <button id="filterBtn" class="filter-btn">
+                ⚙ Filters
+            </button>
+
+            <!-- Filter Panel -->
+            <div id="filterPanel" class="filter-panel">
+
+                <label>Instrument</label>
+                <select id="instrumentFilter">
+                    <option value="">All Instruments</option>
+                </select>
+
+                <label>Location</label>
+                <select id="locationFilter">
+                    <option value="">All Locations</option>
+                </select>
+
+                <label>Category</label>
+                <select id="categoryFilter">
+                    <option value="">All Categories</option>
+                </select>
+<!-- 
+                <label>Date</label>
+                <input type="date" id="dateFilter"> -->
+
+                <button id="resetFilters" class="reset-btn">
+                    Reset Filters
+                </button>
+
+            </div>
+
+            <!-- Instrument List -->
+            <div id="instrumentList"></div>
+
+        </aside>
+
+        <!-- Map Area -->
+        <main class="map-container">
+            <div id="map"></div>
+        </main>
+
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <!-- Filter Toggle Script -->
+   <script>
+    const filterBtn = document.getElementById("filterBtn");
+    const filterPanel = document.getElementById("filterPanel");
+
+    filterBtn.addEventListener("click", () => {
+        filterPanel.classList.toggle("show");
+    });
+
+    document.getElementById("resetFilters").addEventListener("click", () => {
+        document.getElementById("instrumentFilter").value = "";
+        document.getElementById("locationFilter").value = "";
+        document.getElementById("categoryFilter").value = "";
+    });
+</script>
+
+    <!-- JS File -->
+    <script src="script.js"></script>
+
+</body>
+</html>

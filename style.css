@@ -1,0 +1,211 @@
+ 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+}
+
+header {
+    background: #003366;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    height: calc(100vh - 90px);
+}
+
+.sidebar {
+    width: 320px;
+    background: white;
+    padding: 20px;
+    overflow-y: auto;
+    border-right: 1px solid #ccc;
+}
+
+.sidebar h2 {
+    margin-bottom: 15px;
+    color: #003366;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.instrument-card {
+    background: #f8f9fc;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.instrument-card:hover {
+    background: #e3f2fd;
+}
+
+.instrument-card h3 {
+    color: #003366;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+.instrument-card p {
+    font-size: 14px;
+    color: #444;
+}
+
+.map-container {
+    flex: 1;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+
+    .container {
+        flex-direction: column;
+    }
+
+}
+
+/* State tooltip styling */
+.leaflet-tooltip {
+    background: rgba(0, 0, 0, 0.8);   /* dark background */
+    color: #ffffff;                   /* white text */
+    font-size: 16px;                  /* bigger font */
+    font-weight: bold;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ffffff;
+}
+
+<!--
+.state-tooltip {
+    background: rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    font-size: 18px;   /* bigger text */
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #ffffff;
+} 
+
+-->
+
+/* State name text only - no box */
+.state-tooltip {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: white !important;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Remove tooltip arrow */
+.state-tooltip::before {
+    display: none !important;
+}
+
+.marker-label {
+    background: rgba(0, 51, 102, 0.9) !important; /* dark blue box */
+    color: white !important;                      /* text color */
+    font-size: 13px;
+    font-weight: bold;
+
+    padding: 4px 8px;
+    border-radius: 6px;                          /* rounded corners */
+
+    border: 1px solid #4fc3f7;                   /* light blue border */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);       /* shadow effect */
+
+    text-align: center;
+}
+
+/* Small arrow below box */
+.marker-label::before {
+    border-top-color: rgba(0, 51, 102, 0.9) !important;
+}
+
+.state-label {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.filter-btn {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    background: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.filter-btn:hover {
+    background: #003d80;
+}
+
+.filter-panel {
+    display: none;
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+}
+
+.filter-panel.show {
+    display: block;
+}
+
+.filter-panel label {
+    display: block;
+    margin: 8px 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.filter-panel select,
+.filter-panel input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.reset-btn {
+    width: 100%;
+    padding: 10px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.reset-btn:hover {
+    background: #b52b38;
+}

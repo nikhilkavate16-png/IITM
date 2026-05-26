@@ -1,0 +1,94 @@
+[
+    {
+        "id": 1,
+        "instrument_name": "Automatic Weather Station",
+        "location_name": "Pune",
+        "latitude": 18.5204,
+        "longitude": 73.8567,
+        "installation_date": "2023-01-15",
+        "category": "Weather Monitoring",
+        "objective": "Continuous weather monitoring",
+        "description": "Measures temperature, humidity, rainfall and wind parameters."
+    },
+    {
+        "id": 2,
+        "instrument_name": "Doppler Weather Radar",
+        "location_name": "Mumbai",
+        "latitude": 19.076,
+        "longitude": 72.8777,
+        "installation_date": "2021-06-10",
+        "category": "Radar",
+        "objective": "Monitoring severe weather systems",
+        "description": "Used for rainfall and storm tracking."
+    },
+    {
+        "instrument_name": "ICPM, IC, BC Analyzer, AAS, Portable Phosynthesis Analyser, Aethalomter, HRGCMS, Integrated Confocal Raman Microscope, Scanning Electron Microscope (SEM) with Energy Dispersive X-Ray Spectroscopy (EDX), Air Quality Monitering Station, Optical Transmitometer -OT21",
+        "location_name": "IITM Pune",
+        "latitude": "18.537227",
+        "longitude": "73.805566",
+        "installation_date": "",
+        "category": "",
+        "objective": "",
+        "description": ""
+    },
+    {
+        "instrument_name": "dcds",
+        "location_name": "lukh",
+        "latitude": "26.326243",
+        "longitude": "81.602492",
+        "installation_date": "",
+        "category": "",
+        "objective": "",
+        "description": ""
+    },
+    {
+        "instrument_name": "adw",
+        "location_name": "bhop",
+        "latitude": "22.485490",
+        "longitude": "78.708419",
+        "installation_date": "",
+        "category": "",
+        "objective": "",
+        "description": ""
+    },
+    {
+        "instrument_name": "qq",
+        "location_name": "eqw",
+        "latitude": "17.168784",
+        "longitude": "79.213936",
+        "installation_date": "",
+        "category": "",
+        "objective": "",
+        "description": ""
+    },
+    {
+        "instrument_name": "wsd",
+        "location_name": "wdw",
+        "latitude": "15.259456",
+        "longitude": "75.964492",
+        "installation_date": "",
+        "category": "",
+        "objective": "",
+        "description": ""
+    },
+    {
+        "instrument_name": "dad",
+        "location_name": "add",
+        "latitude": "10.603020",
+        "longitude": "78.598038",
+        "installation_date": "",
+        "category": "",
+        "objective": "",
+        "description": ""
+    },
+    {
+        "instrument_name": "add",
+        "location_name": "dad",
+        "latitude": "25.118761",
+        "longitude": "92.626867",
+        "installation_date": "",
+        "category": "",
+        "objective": "",
+        "description": ""
+    }
+]
