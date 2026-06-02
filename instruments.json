@@ -1,10 +1,9 @@
 [
     {
-        "id": 1,
         "instrument_name": "Automatic Weather Station",
         "location_name": "Pune",
-        "latitude": 18.5204,
-        "longitude": 73.8567,
+        "latitude": "18.682675",
+        "longitude": "73.773244",
         "installation_date": "2023-01-15",
         "category": "Weather Monitoring",
         "objective": "Continuous weather monitoring",
@@ -32,63 +31,43 @@
         "description": ""
     },
     {
-        "instrument_name": "dcds",
-        "location_name": "lukh",
-        "latitude": "26.326243",
-        "longitude": "81.602492",
+        "instrument_name": "AMS",
+        "location_name": "IMD, Delhi",
+        "latitude": "28.589345",
+        "longitude": "77.217523",
         "installation_date": "",
         "category": "",
         "objective": "",
+        "description": "Non-refractory PM1 components (organics, sulfate, nitrate, ammonium, chloride)"
+    },
+    {
+        "instrument_name": "Air Quality Monitoring Station",
+        "location_name": "Ahmedabad",
+        "latitude": "22.983681",
+        "longitude": "72.592392",
+        "installation_date": "",
+        "category": "",
+        "objective": "PM2.5, PM10, CO, O3, NOx, BTEX, NH3, CO2, SO2",
         "description": ""
     },
     {
-        "instrument_name": "adw",
-        "location_name": "bhop",
-        "latitude": "22.485490",
-        "longitude": "78.708419",
+        "instrument_name": "Air Quality Monitoring Station",
+        "location_name": "Srinagar , J &K",
+        "latitude": "34.061761",
+        "longitude": "74.814562",
         "installation_date": "",
         "category": "",
-        "objective": "",
+        "objective": "PM2.5, PM10, CO, O3, NOx, CH4, NMHC, CO2",
         "description": ""
     },
     {
-        "instrument_name": "qq",
-        "location_name": "eqw",
-        "latitude": "17.168784",
-        "longitude": "79.213936",
+        "instrument_name": "Air Quality Monitoring Station",
+        "location_name": "Chennai",
+        "latitude": "13.071452",
+        "longitude": "80.238690",
         "installation_date": "",
         "category": "",
-        "objective": "",
-        "description": ""
-    },
-    {
-        "instrument_name": "wsd",
-        "location_name": "wdw",
-        "latitude": "15.259456",
-        "longitude": "75.964492",
-        "installation_date": "",
-        "category": "",
-        "objective": "",
-        "description": ""
-    },
-    {
-        "instrument_name": "dad",
-        "location_name": "add",
-        "latitude": "10.603020",
-        "longitude": "78.598038",
-        "installation_date": "",
-        "category": "",
-        "objective": "",
-        "description": ""
-    },
-    {
-        "instrument_name": "add",
-        "location_name": "dad",
-        "latitude": "25.118761",
-        "longitude": "92.626867",
-        "installation_date": "",
-        "category": "",
-        "objective": "",
+        "objective": "PM2.5, PM10, CO, O3, NOx, CH4, NMHC, CO2",
         "description": ""
     }
 ]
