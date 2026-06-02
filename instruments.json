@@ -1,15 +1,5 @@
 [
     {
-        "instrument_name": "Automatic Weather Station",
-        "location_name": "Pune",
-        "latitude": "18.682675",
-        "longitude": "73.773244",
-        "installation_date": "2023-01-15",
-        "category": "Weather Monitoring",
-        "objective": "Continuous weather monitoring",
-        "description": "Measures temperature, humidity, rainfall and wind parameters."
-    },
-    {
         "id": 2,
         "instrument_name": "Doppler Weather Radar",
         "location_name": "Mumbai",
