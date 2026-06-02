@@ -59,5 +59,35 @@
         "category": "",
         "objective": "PM2.5, PM10, CO, O3, NOx, CH4, NMHC, CO2",
         "description": ""
+    },
+    {
+        "instrument_name": "Air Quality Monitoring Station, AWS, BC analyzer",
+        "location_name": "Thiruvananthapuram",
+        "latitude": "8.461506",
+        "longitude": "76.986800",
+        "installation_date": "",
+        "category": "",
+        "objective": "PM2.5, PM10, CO, O3, NOx, CH4, NMHC, CO2\nTemp, RH, WS, WD, Pressure, RF\nBlack Carbon\n",
+        "description": ""
+    },
+    {
+        "instrument_name": "Air Quality Monitoring Station",
+        "location_name": "Mahabaleshwar",
+        "latitude": "17.934316",
+        "longitude": "73.649629",
+        "installation_date": "",
+        "category": "",
+        "objective": "PM2.5, PM10, CO, O3, NOx, BTEX, NH3, CO2, SO2",
+        "description": ""
+    },
+    {
+        "instrument_name": "Air Quality Monitoring Station, AWS",
+        "location_name": "Bhopal",
+        "latitude": "23.261534",
+        "longitude": "77.387503",
+        "installation_date": "",
+        "category": "",
+        "objective": "PM2.5, PM10, CO, O3, NOx, BTEX, NH3, CO2, SO2\nTemp, RH, WS, WD, Pressure, RF\n",
+        "description": ""
     }
 ]
