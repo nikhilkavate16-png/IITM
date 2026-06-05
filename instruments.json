@@ -1,93 +1,135 @@
 [
     {
-        "id": 2,
-        "instrument_name": "Doppler Weather Radar",
-        "location_name": "Mumbai",
-        "latitude": 19.076,
-        "longitude": 72.8777,
-        "installation_date": "2021-06-10",
-        "category": "Radar",
-        "objective": "Monitoring severe weather systems",
-        "description": "Used for rainfall and storm tracking."
-    },
-    {
-        "instrument_name": "ICPM, IC, BC Analyzer, AAS, Portable Phosynthesis Analyser, Aethalomter, HRGCMS, Integrated Confocal Raman Microscope, Scanning Electron Microscope (SEM) with Energy Dispersive X-Ray Spectroscopy (EDX), Air Quality Monitering Station, Optical Transmitometer -OT21",
         "location_name": "IITM Pune",
         "latitude": "18.537227",
         "longitude": "73.805566",
-        "installation_date": "",
-        "category": "",
-        "objective": "",
-        "description": ""
+        "instruments": [
+            {
+                "instrument_name": "ICPM",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "IC",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "BC Analyzer",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "AAS",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "Portable Photosynthesis Analyser",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "Aethalometer",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "HRGCMS",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "Integrated Confocal Raman Microscope",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "Scanning Electron Microscope (SEM) with Energy Dispersive X-Ray Spectroscopy (EDX)",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "Air Quality Monitoring Station",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "Optical Transmissometer - OT21",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            }
+        ]
     },
     {
-        "instrument_name": "AMS",
-        "location_name": "IMD, Delhi",
-        "latitude": "28.589345",
-        "longitude": "77.217523",
-        "installation_date": "",
-        "category": "",
-        "objective": "",
-        "description": "Non-refractory PM1 components (organics, sulfate, nitrate, ammonium, chloride)"
+        "location_name": "mumbai",
+        "latitude": "19.305959",
+        "longitude": "72.817296",
+        "instruments": [
+            {
+                "instrument_name": "ICPM",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "IC",
+                "installation_date": "",
+                "category": "",
+                "objective": "air",
+                "description": ""
+            },
+            {
+                "instrument_name": "BC Analyzer",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            }
+        ]
     },
     {
-        "instrument_name": "Air Quality Monitoring Station",
-        "location_name": "Ahmedabad",
-        "latitude": "22.983681",
-        "longitude": "72.592392",
-        "installation_date": "",
-        "category": "",
-        "objective": "PM2.5, PM10, CO, O3, NOx, BTEX, NH3, CO2, SO2",
-        "description": ""
-    },
-    {
-        "instrument_name": "Air Quality Monitoring Station",
-        "location_name": "Srinagar , J &K",
-        "latitude": "34.061761",
-        "longitude": "74.814562",
-        "installation_date": "",
-        "category": "",
-        "objective": "PM2.5, PM10, CO, O3, NOx, CH4, NMHC, CO2",
-        "description": ""
-    },
-    {
-        "instrument_name": "Air Quality Monitoring Station",
-        "location_name": "Chennai",
-        "latitude": "13.071452",
-        "longitude": "80.238690",
-        "installation_date": "",
-        "category": "",
-        "objective": "PM2.5, PM10, CO, O3, NOx, CH4, NMHC, CO2",
-        "description": ""
-    },
-    {
-        "instrument_name": "Air Quality Monitoring Station, AWS, BC analyzer",
-        "location_name": "Thiruvananthapuram",
-        "latitude": "8.461506",
-        "longitude": "76.986800",
-        "installation_date": "",
-        "category": "",
-        "objective": "PM2.5, PM10, CO, O3, NOx, CH4, NMHC, CO2\nTemp, RH, WS, WD, Pressure, RF\nBlack Carbon\n",
-        "description": ""
-    },
-    {
-        "instrument_name": "Air Quality Monitoring Station",
-        "location_name": "Mahabaleshwar",
-        "latitude": "17.934316",
-        "longitude": "73.649629",
-        "installation_date": "",
-        "category": "",
-        "objective": "PM2.5, PM10, CO, O3, NOx, BTEX, NH3, CO2, SO2",
-        "description": ""
-    },
-    {
-        "instrument_name": "Air Quality Monitoring Station, AWS",
-        "location_name": "Bhopal",
-        "latitude": "23.261534",
-        "longitude": "77.387503",
-        "installation_date": "",
-        "category": "",
-        "objective": "PM2.5, PM10, CO, O3, NOx, BTEX, NH3, CO2, SO2\nTemp, RH, WS, WD, Pressure, RF\n",
-        "description": ""
+        "location_name": "nashik",
+        "latitude": "19.973349",
+        "longitude": "73.839904",
+        "instruments": [
+            {
+                "instrument_name": "AAS",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            },
+            {
+                "instrument_name": "Portable Photosynthesis Analyser",
+                "installation_date": "",
+                "category": "",
+                "objective": "",
+                "description": ""
+            }
+        ]
     }
 ]
