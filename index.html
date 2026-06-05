@@ -16,17 +16,33 @@
 
     <!-- Header -->
     <header>
-        <h1>IITM Observational Facilities Portal</h1>
-        <p>Interactive Map of IITM Observation Instruments</p>
+        <div class="brand-mark" aria-hidden="true">
+            <img src="logo.gif" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <span>I</span>
+        </div>
+        <div class="header-text">
+            <h1>IITM Observational Facilities Portal</h1>
+            <p>Interactive Map of IITM Observation Instruments</p>
+        </div>
     </header>
 
     <!-- Main Layout -->
     <div class="container">
 
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
+            <button id="sidebarToggle"
+                    class="sidebar-toggle"
+                    type="button"
+                    aria-label="Hide sidebar"
+                    aria-expanded="true">
+                <span aria-hidden="true">‹</span>
+            </button>
 
-            <h2>Instrument List</h2>
+            <div class="sidebar-head">
+                <h2>Instrument List</h2>
+                <span id="resultCount" class="result-count">0</span>
+            </div>
 
             <!-- Search -->
             <input type="text"
@@ -66,7 +82,7 @@
             </div>
 
             <!-- Instrument List -->
-            <div id="instrumentList"></div>
+            <div id="instrumentList" class="instrument-list"></div>
 
         </aside>
 
@@ -80,22 +96,6 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-
-    <!-- Filter Toggle Script -->
-   <script>
-    const filterBtn = document.getElementById("filterBtn");
-    const filterPanel = document.getElementById("filterPanel");
-
-    filterBtn.addEventListener("click", () => {
-        filterPanel.classList.toggle("show");
-    });
-
-    document.getElementById("resetFilters").addEventListener("click", () => {
-        document.getElementById("instrumentFilter").value = "";
-        document.getElementById("locationFilter").value = "";
-        document.getElementById("categoryFilter").value = "";
-    });
-</script>
 
     <!-- JS File -->
     <script src="script.js"></script>
