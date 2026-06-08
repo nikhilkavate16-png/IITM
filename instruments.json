@@ -1,133 +1,336 @@
 [
     {
-        "location_name": "IITM Pune",
-        "latitude": "18.537227",
-        "longitude": "73.805566",
+        "location_name": "ART-CI, Silkheda",
+        "latitude": "23.57163",
+        "longitude": "77.24625",
         "instruments": [
             {
-                "instrument_name": "ICPM",
+                "instrument_name": "Automatic Weather Stations (AWS)",
                 "installation_date": "",
-                "category": "",
-                "objective": "",
+                "category": "Surface Observations",
+                "objective": "Measure temperature, wind, pressure, humidity & rainfall.",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, & Rain over a point location. Measurements were taken every 1/5 minute."
+            },
+            {
+                "instrument_name": "All-in-One Weather Sensors",
+                "installation_date": "",
+                "category": "Surface Observations",
+                "objective": "Take readings at 8 levels",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, rainfall,& Rain intensity over a point location. Measurements were taken every 1/15 minute."
+            },
+            {
+                "instrument_name": "Radiosonde",
+                "installation_date": "",
+                "category": "Upper air observations",
+                "objective": "Vertical profiles of temperature, pressure, wind, & humidity.",
+                "description": "Measurement of vertical profiles of atmospheric parameters like temperature, humidity, pressure, and wind.\nEvery day one ascent."
+            },
+            {
+                "instrument_name": "MWR",
+                "installation_date": "",
+                "category": "Atmospheric Thermodynamic Profiling",
+                "objective": "Measures vertical profiles of temperature, humidity, and liquid water content.\nEvery4/5 minutes",
                 "description": ""
             },
             {
-                "instrument_name": "IC",
+                "instrument_name": "Raman Lidar",
                 "installation_date": "",
-                "category": "",
-                "objective": "",
+                "category": "Atmospheric Thermodynamic Profiling",
+                "objective": "Profiles of temperature, humidity and aerosol back scatter. Every 10 minutes",
                 "description": ""
             },
             {
-                "instrument_name": "BC Analyzer",
+                "instrument_name": "C band DWR",
                 "installation_date": "",
-                "category": "",
-                "objective": "",
-                "description": ""
-            },
-            {
-                "instrument_name": "AAS",
-                "installation_date": "",
-                "category": "",
-                "objective": "",
-                "description": ""
-            },
-            {
-                "instrument_name": "Portable Photosynthesis Analyser",
-                "installation_date": "",
-                "category": "",
-                "objective": "",
-                "description": ""
-            },
-            {
-                "instrument_name": "Aethalometer",
-                "installation_date": "",
-                "category": "",
-                "objective": "",
-                "description": ""
-            },
-            {
-                "instrument_name": "HRGCMS",
-                "installation_date": "",
-                "category": "",
-                "objective": "",
-                "description": ""
-            },
-            {
-                "instrument_name": "Integrated Confocal Raman Microscope",
-                "installation_date": "",
-                "category": "",
-                "objective": "",
-                "description": ""
-            },
-            {
-                "instrument_name": "Scanning Electron Microscope (SEM) with Energy Dispersive X-Ray Spectroscopy (EDX)",
-                "installation_date": "",
-                "category": "",
-                "objective": "",
-                "description": ""
-            },
-            {
-                "instrument_name": "Air Quality Monitoring Station",
-                "installation_date": "",
-                "category": "",
-                "objective": "",
-                "description": ""
-            },
-            {
-                "instrument_name": "Optical Transmissometer - OT21",
-                "installation_date": "",
-                "category": "",
-                "objective": "",
+                "category": "RADAR",
+                "objective": "3D structures of precipitating clouds (Reflectivity, Doppler velocity, Spectral width, Differential reflectivity, Correlation coefficient, differential phase, specific differential phase, and HMC).\nEvery 6 minutes.",
                 "description": ""
             }
         ]
     },
     {
-        "location_name": "mumbai",
-        "latitude": "19.305959",
-        "longitude": "72.817296",
+        "location_name": "HACPL, Mahabaleshwar",
+        "latitude": "17.887273",
+        "longitude": "73.811521",
         "instruments": [
             {
-                "instrument_name": "ICPM",
+                "instrument_name": "Automatic Weather Stations (AWS)",
                 "installation_date": "",
-                "category": "",
-                "objective": "",
+                "category": "Surface Observations",
+                "objective": "Measure temperature, wind, pressure, humidity & rainfall.",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, & Rain over a point location. Measurements were taken every 1/5 minute."
+            },
+            {
+                "instrument_name": "Radiosonde",
+                "installation_date": "",
+                "category": "Upper air observations",
+                "objective": "Vertical profiles of temperature, pressure, wind, & humidity",
+                "description": "Measurement of vertical profiles of atmospheric parameters like temperature, humidity, pressure, and wind.\nEvery day one ascent."
+            },
+            {
+                "instrument_name": "MWR",
+                "installation_date": "",
+                "category": "Atmospheric Thermodynamic Profiling",
+                "objective": "Measures vertical profiles of temperature, humidity, and liquid water content.\nEvery4/5 minutes.",
                 "description": ""
             },
             {
-                "instrument_name": "IC",
+                "instrument_name": "Multi filter rotating shadow band radiometer (MFRSR)",
                 "installation_date": "",
-                "category": "",
-                "objective": "air",
+                "category": "Atmospheric Thermodynamic Profiling",
+                "objective": "Measures direct, diffuse, and total solar irradiance at multiple wavelengths. Every 15 seconds.",
                 "description": ""
             },
             {
-                "instrument_name": "BC Analyzer",
+                "instrument_name": "X band DWR",
                 "installation_date": "",
-                "category": "",
-                "objective": "",
+                "category": "RADAR",
+                "objective": "3D structures of precipitating clouds- Every 6 minutes (Reflectivity, Doppler velocity, Spectral width, Differential reflectivity, Correlation coefficient, differential phase, specific differential phase, and HMC).",
                 "description": ""
             }
         ]
     },
     {
-        "location_name": "nashik",
-        "latitude": "19.973349",
-        "longitude": "73.839904",
+        "location_name": "Visakhapatnam",
+        "latitude": "12.94670",
+        "longitude": "80.21098",
         "instruments": [
             {
-                "instrument_name": "AAS",
+                "instrument_name": "Automatic Weather Stations (AWS)",
                 "installation_date": "",
-                "category": "",
-                "objective": "",
-                "description": ""
+                "category": "Surface Observations",
+                "objective": "Measure temperature, wind, pressure, humidity & rainfall.",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, & Rain over a point location. Measurements were taken every 1/5 minute."
             },
             {
-                "instrument_name": "Portable Photosynthesis Analyser",
+                "instrument_name": "Radiosonde",
                 "installation_date": "",
-                "category": "",
-                "objective": "",
+                "category": "Upper air observations",
+                "objective": "Vertical profiles of temperature, pressure, wind, & humidity",
+                "description": "Measurement of vertical profiles of atmospheric parameters like temperature, humidity, pressure, and wind.\nEvery day one ascent."
+            },
+            {
+                "instrument_name": "MWR",
+                "installation_date": "",
+                "category": "Atmospheric Thermodynamic Profiling",
+                "objective": "Measures vertical profiles of temperature, humidity, and liquid water content.\nEvery4/5 minutes",
+                "description": ""
+            }
+        ]
+    },
+    {
+        "location_name": "Thiruvananthapuram",
+        "latitude": "8.52004",
+        "longitude": "76.92999",
+        "instruments": [
+            {
+                "instrument_name": "Automatic Weather Stations (AWS)",
+                "installation_date": "",
+                "category": "Surface Observations",
+                "objective": "Measure temperature, wind, pressure, humidity & rainfall.",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, & Rain over a point location. Measurements were taken every 1/5 minute."
+            }
+        ]
+    },
+    {
+        "location_name": "Chandani chowk",
+        "latitude": "28.65006",
+        "longitude": "77.23002",
+        "instruments": [
+            {
+                "instrument_name": "Automatic Weather Stations (AWS)",
+                "installation_date": "",
+                "category": "Surface Observations",
+                "objective": "Measure temperature, wind, pressure, humidity & rainfall.",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, & Rain over a point location. Measurements were taken every 1/5 minute."
+            }
+        ]
+    },
+    {
+        "location_name": "Gurugram",
+        "latitude": "28.45000",
+        "longitude": "77.02000",
+        "instruments": [
+            {
+                "instrument_name": "Automatic Weather Stations (AWS)",
+                "installation_date": "",
+                "category": "Surface Observations",
+                "objective": "Measure temperature, wind, pressure, humidity & rainfall.",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, & Rain over a point location. Measurements were taken every 1/5 minute."
+            }
+        ]
+    },
+    {
+        "location_name": "Srinagar, Garwal",
+        "latitude": "30.21990",
+        "longitude": "78.79014",
+        "instruments": [
+            {
+                "instrument_name": "Automatic Weather Stations (AWS)",
+                "installation_date": "",
+                "category": "Surface Observations",
+                "objective": "Measure temperature, wind, pressure, humidity & rainfall.",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, & Rain over a point location. Measurements were taken every 1/5 minute."
+            }
+        ]
+    },
+    {
+        "location_name": "Bhopal",
+        "latitude": "23.25004",
+        "longitude": "77.23000",
+        "instruments": [
+            {
+                "instrument_name": "Automatic Weather Stations (AWS)",
+                "installation_date": "",
+                "category": "Surface Observations",
+                "objective": "Measure temperature, wind, pressure, humidity & rainfall.",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, & Rain over a point location. Measurements were taken every 1/5 minute."
+            }
+        ]
+    },
+    {
+        "location_name": "Sikkim",
+        "latitude": "27.35002",
+        "longitude": "88.31999",
+        "instruments": [
+            {
+                "instrument_name": "Automatic Weather Stations (AWS)",
+                "installation_date": "",
+                "category": "Surface Observations",
+                "objective": "Measure temperature, wind, pressure, humidity & rainfall.",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, & Rain over a point location. Measurements were taken every 1/5 minute."
+            }
+        ]
+    },
+    {
+        "location_name": "IITM-COSMOS",
+        "latitude": "18.53004",
+        "longitude": "73.80001",
+        "instruments": [
+            {
+                "instrument_name": "All-in-One Weather Sensors",
+                "installation_date": "",
+                "category": "Surface Observations",
+                "objective": "Take readings at 3 levels at 2m, 10, & 20m)",
+                "description": "Continuous measurements of wind speed, wind direction, temperature, pressure, relative humidity, rainfall,& Rain intensity over a point location. Measurements were taken every 1/15 minute."
+            }
+        ]
+    },
+    {
+        "location_name": "Solapur",
+        "latitude": "17.72705",
+        "longitude": "75.84800",
+        "instruments": [
+            {
+                "instrument_name": "Radiosonde",
+                "installation_date": "",
+                "category": "Upper air observations",
+                "objective": "Vertical profiles of temperature, pressure, wind, & humidity",
+                "description": "Measurement of vertical profiles of atmospheric parameters like temperature, humidity, pressure, and wind.\nEvery day one ascent."
+            },
+            {
+                "instrument_name": "MWR",
+                "installation_date": "",
+                "category": "Atmospheric Thermodynamic Profiling",
+                "objective": "Measures vertical profiles of temperature, humidity, and liquid water content.\nEvery4/5 minutes.",
+                "description": ""
+            }
+        ]
+    },
+    {
+        "location_name": "Tuljapur",
+        "latitude": "18.00118",
+        "longitude": "76.06980",
+        "instruments": [
+            {
+                "instrument_name": "MWR",
+                "installation_date": "",
+                "category": "Atmospheric Thermodynamic Profiling",
+                "objective": "Measures vertical profiles of temperature, humidity, and liquid water content.\nEvery4/5 minutes",
+                "description": ""
+            }
+        ]
+    },
+    {
+        "location_name": "URBAN MET - DELHI Prithvi Bhavan, MoES",
+        "latitude": "28.58975",
+        "longitude": "77.22347",
+        "instruments": [
+            {
+                "instrument_name": "MWR",
+                "installation_date": "",
+                "category": "Atmospheric Thermodynamic Profiling",
+                "objective": "Measures vertical profiles of temperature, humidity, and liquid water content.\nEvery4/5 minutes.",
+                "description": ""
+            }
+        ]
+    },
+    {
+        "location_name": "Cotton University, Guwahati, Assam.",
+        "latitude": "26.18744",
+        "longitude": "91.4670",
+        "instruments": [
+            {
+                "instrument_name": "MWR",
+                "installation_date": "",
+                "category": "Atmospheric Thermodynamic Profiling",
+                "objective": "Measures vertical profiles of temperature, humidity, and liquid water content.\nEvery4/5 minutes.",
+                "description": ""
+            }
+        ]
+    },
+    {
+        "location_name": "Vidyavardhini’s College of Engineering, Vasai",
+        "latitude": "19.38412",
+        "longitude": "72.82865",
+        "instruments": [
+            {
+                "instrument_name": "X band DWR",
+                "installation_date": "",
+                "category": "RADAR",
+                "objective": "3D structures of precipitating clouds- Every 6 minutes (Reflectivity, Doppler velocity, Spectral width, Differential reflectivity, Correlation coefficient, differential phase, specific differential phase, and HMC).",
+                "description": ""
+            }
+        ]
+    },
+    {
+        "location_name": "DJ Sanghvi College of Engineering, Vile Parle.",
+        "latitude": "19.10725",
+        "longitude": "72.83720",
+        "instruments": [
+            {
+                "instrument_name": "X band DWR",
+                "installation_date": "",
+                "category": "RADAR",
+                "objective": "3D structures of precipitating clouds- Every 6 minutes (Reflectivity, Doppler velocity, Spectral width, Differential reflectivity, Correlation coefficient, differential phase, specific differential phase, and HMC).",
+                "description": ""
+            }
+        ]
+    },
+    {
+        "location_name": "KDMC water treatment plant, Kalyan.",
+        "latitude": "19.22680",
+        "longitude": "73.11853",
+        "instruments": [
+            {
+                "instrument_name": "X band DWR",
+                "installation_date": "",
+                "category": "RADAR",
+                "objective": "3D structures of precipitating clouds- Every 6 minutes (Reflectivity, Doppler velocity, Spectral width, Differential reflectivity, Correlation coefficient, differential phase, specific differential phase, and HMC).",
+                "description": ""
+            }
+        ]
+    },
+    {
+        "location_name": "Amity University, Panvel.",
+        "latitude": "18.93222",
+        "longitude": "73.16127",
+        "instruments": [
+            {
+                "instrument_name": "X band DWR",
+                "installation_date": "",
+                "category": "RADAR",
+                "objective": "3D structures of precipitating clouds- Every 6 minutes (Reflectivity, Doppler velocity, Spectral width, Differential reflectivity, Correlation coefficient, differential phase, specific differential phase, and HMC).",
                 "description": ""
             }
         ]
