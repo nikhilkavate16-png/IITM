@@ -20,9 +20,21 @@
             <img src="logo.gif" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <span>I</span>
         </div>
-        <div class="header-text">
-            <h1>IITM Observational Facilities Portal</h1>
-            <p>Interactive Map of IITM Observation Instruments</p>
+        <div class="header-content">
+            <div class="institute-row">
+                <div class="institute-title">
+                    <h1>Indian Institute of Tropical Meteorology (IITM)</h1>
+                    <p>भारतीय उष्णदेशीय मौसम विज्ञान संस्थान (आईआईटीएम)</p>
+                </div>
+                <div class="institute-affiliation">
+                    <p>An Autonomous Institute of the Ministry of Earth Sciences, Govt. of India</p>
+                    <p>पृथ्वी विज्ञान मंत्रालय, भारत सरकार का एक स्वायत्त संस्थान</p>
+                </div>
+            </div>
+            <div class="portal-title">
+                <h2>IITM Observational Facilities Portal</h2>
+                <p>Interactive Map of IITM Observation Instruments</p>
+            </div>
         </div>
     </header>
 
@@ -57,6 +69,11 @@
             <!-- Filter Panel -->
             <div id="filterPanel" class="filter-panel">
 
+                <label>Category</label>
+                <select id="categoryFilter">
+                    <option value="">All Categories</option>
+                </select>
+
                 <label>Instrument</label>
                 <select id="instrumentFilter">
                     <option value="">All Instruments</option>
@@ -65,11 +82,6 @@
                 <label>Location</label>
                 <select id="locationFilter">
                     <option value="">All Locations</option>
-                </select>
-
-                <label>Category</label>
-                <select id="categoryFilter">
-                    <option value="">All Categories</option>
                 </select>
 <!-- 
                 <label>Date</label>
@@ -98,7 +110,7 @@
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
     <!-- JS File -->
-    <script src="script.js"></script>
+    <script src="script.js?v=20260610-4"></script>
 
 </body>
 </html>
