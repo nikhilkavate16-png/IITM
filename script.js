@@ -113,19 +113,38 @@ function normalizeInstrumentData(data) {
 // ========================================
 
 function buildLocationPopup(locationGroup, index) {
-    const selectedInstrument = locationGroup.selectedInstrumentId
+    const selectedInstrumentFromCard = locationGroup.selectedInstrumentId
         ? locationGroup.instruments.find(instrument => String(instrument.id) === String(locationGroup.selectedInstrumentId))
         : null;
+    const selectedInstrument = selectedInstrumentFromCard ||
+        (locationGroup.hasActiveFilters ? locationGroup.instruments[0] : null);
     const selectedParam = selectedInstrument
         ? `, ${escapeHTML(JSON.stringify(String(selectedInstrument.id)))}`
         : "";
-    const selectedButton = selectedInstrument
-        ? `
-            <button type="button" class="popup-view-btn popup-secondary-btn" onclick="openInstrumentTable(${index}${selectedParam})">
-                View Selected Instrument
-            </button>
-        `
-        : "";
+    const allButtonLabel = locationGroup.hasActiveFilters
+        ? "View All Instruments"
+        : "View Instruments";
+
+    let popupButtons = `
+        <button type="button" class="popup-view-btn" onclick="openInstrumentTable(${index})">
+            ${allButtonLabel}
+        </button>
+    `;
+
+    if (selectedInstrument) {
+        popupButtons = locationGroup.hasActiveFilters
+            ? `
+                ${popupButtons}
+                <button type="button" class="popup-view-btn popup-secondary-btn" onclick="openInstrumentTable(${index}${selectedParam})">
+                    View Selected Instrument
+                </button>
+            `
+            : `
+                <button type="button" class="popup-view-btn" onclick="openInstrumentTable(${index}${selectedParam})">
+                    View Instrument
+                </button>
+            `;
+    }
 
     return `
         <div class="location-popup">
@@ -134,10 +153,7 @@ function buildLocationPopup(locationGroup, index) {
             <p><b>Longitude:</b> ${escapeHTML(locationGroup.lon.toFixed(6))}</p>
             <p><b>Matching Instruments:</b> ${locationGroup.instruments.length}</p>
             ${selectedInstrument ? `<p><b>Selected:</b> ${escapeHTML(displayValue(selectedInstrument.instrument_name, "Unnamed Instrument"))}</p>` : ""}
-            <button type="button" class="popup-view-btn" onclick="openInstrumentTable(${index})">
-                View Matching Instruments
-            </button>
-            ${selectedButton}
+            ${popupButtons}
         </div>
     `;
 }
@@ -146,9 +162,10 @@ function openInstrumentTable(index, selectedInstrumentId = "") {
     const locationGroup = currentLocationGroups[index];
     if (!locationGroup) return;
 
+    const tableSource = locationGroup.allInstruments || locationGroup.instruments;
     const tableInstruments = selectedInstrumentId
-        ? locationGroup.instruments.filter(instrument => String(instrument.id) === String(selectedInstrumentId))
-        : locationGroup.instruments;
+        ? tableSource.filter(instrument => String(instrument.id) === String(selectedInstrumentId))
+        : tableSource;
 
     document.getElementById("instrumentTableTitle").innerText =
         displayValue(locationGroup.locationName, "Location");
@@ -341,35 +358,103 @@ fetch("instruments.json")
         let allData = normalizeInstrumentData(data);
         let markerObjects = [];
 
-        function populateFilters() {
-            const instruments = [...new Set(
-                allData.map(d => d.instrument_name).filter(item => item && item.trim() !== "")
-            )];
-            const locations = [...new Set(
-                allData.map(d => d.location_name).filter(item => item && item.trim() !== "")
-            )];
-            const categories = [...new Set(
-                allData.map(d => d.category).filter(item => item && item.trim() !== "")
-            )];
-
-            instrumentFilter.innerHTML = `<option value="">All Instruments</option>`;
-            locationFilter.innerHTML = `<option value="">All Locations</option>`;
-            categoryFilter.innerHTML = `<option value="">All Categories</option>`;
-
-            instruments.forEach(item => {
-                instrumentFilter.innerHTML += `<option value="${escapeHTML(item)}">${escapeHTML(item)}</option>`;
-            });
-
-            locations.forEach(item => {
-                locationFilter.innerHTML += `<option value="${escapeHTML(item)}">${escapeHTML(item)}</option>`;
-            });
-
-            categories.forEach(item => {
-                categoryFilter.innerHTML += `<option value="${escapeHTML(item)}">${escapeHTML(item)}</option>`;
-            });
+        function getFilterSelections() {
+            return {
+                instrument: instrumentFilter.value,
+                location: locationFilter.value,
+                category: categoryFilter.value
+            };
         }
 
-        function renderData(filteredData) {
+        function matchesSearch(item) {
+            return item.instrument_name.toLowerCase().includes(searchInput.value.toLowerCase());
+        }
+
+        function matchesSelectedFilters(item, selections, excludedFilter = "") {
+            return (
+                (excludedFilter === "instrument" || !selections.instrument || item.instrument_name === selections.instrument) &&
+                (excludedFilter === "location" || !selections.location || item.location_name === selections.location) &&
+                (excludedFilter === "category" || !selections.category || item.category === selections.category)
+            );
+        }
+
+        function getFilteredData(selections) {
+            return allData.filter(item => matchesSearch(item) && matchesSelectedFilters(item, selections));
+        }
+
+        function hasActiveFilters(selections = getFilterSelections()) {
+            return Boolean(
+                searchInput.value.trim() ||
+                selections.instrument ||
+                selections.location ||
+                selections.category
+            );
+        }
+
+        function setSelectOptions(select, allLabel, values, currentValue) {
+            select.innerHTML = "";
+
+            const allOption = document.createElement("option");
+            allOption.value = "";
+            allOption.textContent = allLabel;
+            select.appendChild(allOption);
+
+            values
+                .sort((a, b) => a.localeCompare(b))
+                .forEach(value => {
+                    const option = document.createElement("option");
+                    option.value = value;
+                    option.textContent = value;
+                    select.appendChild(option);
+                });
+
+            select.value = values.includes(currentValue) ? currentValue : "";
+        }
+
+        function populateFilters(selections = getFilterSelections()) {
+            const filterConfigs = [
+                {
+                    key: "category",
+                    select: categoryFilter,
+                    field: "category",
+                    allLabel: "All Categories"
+                },
+                {
+                    key: "instrument",
+                    select: instrumentFilter,
+                    field: "instrument_name",
+                    allLabel: "All Instruments"
+                },
+                {
+                    key: "location",
+                    select: locationFilter,
+                    field: "location_name",
+                    allLabel: "All Locations"
+                }
+            ];
+
+            let clearedInvalidSelection = false;
+
+            filterConfigs.forEach(config => {
+                const values = [...new Set(
+                    allData
+                        .filter(item => matchesSearch(item) && matchesSelectedFilters(item, selections, config.key))
+                        .map(item => item[config.field])
+                        .filter(item => item && item.trim() !== "")
+                )];
+
+                setSelectOptions(config.select, config.allLabel, values, selections[config.key]);
+
+                if (selections[config.key] && !values.includes(selections[config.key])) {
+                    selections[config.key] = "";
+                    clearedInvalidSelection = true;
+                }
+            });
+
+            return clearedInvalidSelection;
+        }
+
+        function renderData(filteredData, filtersActive = false) {
             instrumentList.innerHTML = "";
             resultCount.innerText = filteredData.length;
 
@@ -382,6 +467,26 @@ fetch("instruments.json")
             currentLocationGroups = [];
 
             const visibleLocations = new Map();
+            const allInstrumentsByLocation = new Map();
+
+            allData.forEach(instrument => {
+                const lat = parseFloat(instrument.latitude);
+                const lon = parseFloat(instrument.longitude);
+
+                if (Number.isNaN(lat) || Number.isNaN(lon)) return;
+
+                const locationKey = [
+                    instrument.location_name,
+                    lat.toFixed(6),
+                    lon.toFixed(6)
+                ].join("|");
+
+                if (!allInstrumentsByLocation.has(locationKey)) {
+                    allInstrumentsByLocation.set(locationKey, []);
+                }
+
+                allInstrumentsByLocation.get(locationKey).push(instrument);
+            });
 
             filteredData.forEach(instrument => {
                 const lat = parseFloat(instrument.latitude);
@@ -410,6 +515,8 @@ fetch("instruments.json")
                         lat,
                         lon,
                         locationName: instrument.location_name,
+                        hasActiveFilters: filtersActive,
+                        allInstruments: allInstrumentsByLocation.get(locationKey) || [],
                         instruments: []
                     });
                 }
@@ -507,29 +614,18 @@ fetch("instruments.json")
                         firstCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
                     }
 
-                    if (window.matchMedia("(max-width: 900px)").matches) {
-                        setSidebarCollapsed(false);
-                    }
                 });
             });
         }
 
         function applyFilters() {
-            const searchText = searchInput.value.toLowerCase();
-            const selectedInstrument = instrumentFilter.value;
-            const selectedLocation = locationFilter.value;
-            const selectedCategory = categoryFilter.value;
+            let selections = getFilterSelections();
 
-            const filteredData = allData.filter(item => {
-                return (
-                    item.instrument_name.toLowerCase().includes(searchText) &&
-                    (!selectedInstrument || item.instrument_name === selectedInstrument) &&
-                    (!selectedLocation || item.location_name === selectedLocation) &&
-                    (!selectedCategory || item.category === selectedCategory)
-                );
-            });
+            while (populateFilters(selections)) {
+                selections = getFilterSelections();
+            }
 
-            renderData(filteredData);
+            renderData(getFilteredData(selections), hasActiveFilters(selections));
         }
 
         searchInput.addEventListener("input", applyFilters);
@@ -542,6 +638,7 @@ fetch("instruments.json")
             instrumentFilter.value = "";
             locationFilter.value = "";
             categoryFilter.value = "";
+            populateFilters();
             renderData(allData);
         });
 
