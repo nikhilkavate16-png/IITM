@@ -1,3 +1,4 @@
+ 
 * {
     margin: 0;
     padding: 0;
@@ -27,8 +28,8 @@ header {
 }
 
 .brand-mark {
-    width: 64px;
-    height: 64px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     display: grid;
     place-items: center;
@@ -41,11 +42,13 @@ header {
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
     overflow: hidden;
     position: relative;
+    align-items: center;
+    justify-content: center;
 }
 
 .brand-mark img {
-    width: 100%;
-    height: 100%;
+    width: 165%;
+    height: 165%;
     object-fit: cover;
     display: none;
 }
@@ -61,7 +64,7 @@ header {
 .header-content {
     flex: 1;
     min-width: 0;
-    max-width: 1480px;
+    /* max-width: 1580px; */
 }
 
 .institute-row {
