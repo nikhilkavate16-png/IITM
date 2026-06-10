@@ -33,6 +33,7 @@ function setSidebarCollapsed(collapsed) {
     sidebar.classList.toggle("collapsed", collapsed);
     sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
     sidebarToggle.setAttribute("aria-label", collapsed ? "Open sidebar" : "Hide sidebar");
+    sidebarToggle.setAttribute("title", collapsed ? "Open instrument list" : "Hide instrument list");
 
     setTimeout(() => {
         map.invalidateSize();
