@@ -27,8 +27,8 @@ header {
 }
 
 .brand-mark {
-    width: 160px;
-    height: 160px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     display: grid;
     place-items: center;
@@ -44,9 +44,8 @@ header {
 }
 
 .brand-mark img {
-    width: 175%;
-    height: 175%;
-    position: absolute;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     display: none;
 }
@@ -62,7 +61,7 @@ header {
 .header-content {
     flex: 1;
     min-width: 0;
-    max-width: 1680px;
+    max-width: 1480px;
 }
 
 .institute-row {
@@ -71,7 +70,7 @@ header {
     justify-content: space-between;
     gap: 28px;
     padding-bottom: 9px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.28);
 }
 
 .institute-title {
@@ -90,7 +89,6 @@ header {
     margin-top: 4px;
     color: #ffffff;
     font-size: 23px;
-
     line-height: 1.22;
     font-weight: 700;
 }
@@ -172,30 +170,60 @@ header {
 .sidebar-toggle {
     position: absolute;
     top: 50%;
-    right: -18px;
-    width: 36px;
-    height: 36px;
-    border: 0;
-    border-radius: 50%;
+    right: -24px;
+    width: 48px;
+    height: 56px;
+    border: 2px solid #ffffff;
+    border-radius: 0 12px 12px 0;
     background: #0056b3;
     color: #ffffff;
     cursor: pointer;
     display: grid;
     place-items: center;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
-    z-index: 1001;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+    z-index: 1200;
     transform: translateY(-50%);
+    transition: background 0.18s ease, box-shadow 0.18s ease, right 0.25s ease, transform 0.18s ease;
+}
+
+.sidebar-toggle:hover {
+    background: #0074d9;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.38);
+}
+
+.sidebar-toggle:focus-visible {
+    outline: 3px solid #ffc107;
+    outline-offset: 3px;
 }
 
 .sidebar-toggle span {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #003366;
+    position: relative;
     display: block;
-    font-size: 28px;
-    line-height: 1;
-    transform: translateY(-1px);
+    font-size: 0;
+    line-height: 0;
 }
 
-.sidebar.collapsed .sidebar-toggle span {
-    transform: rotate(180deg) translateY(1px);
+.sidebar-toggle span::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    border-top: 5px solid #003366;
+    border-right: 5px solid #003366;
+    transform: translate(-40%, -50%) rotate(-135deg);
+    transform-origin: center;
+    transition: transform 0.18s ease;
+}
+
+.sidebar.collapsed .sidebar-toggle span::before {
+    transform: translate(-60%, -50%) rotate(45deg);
 }
 
 .sidebar h2 {
@@ -646,8 +674,12 @@ header {
     }
 
     .sidebar-toggle {
-        right: -42px;
+        right: -54px;
         top: 50%;
+        width: 54px;
+        height: 62px;
+        border-radius: 0 14px 14px 0;
+        border-left: 0;
     }
 
     .map-container {
