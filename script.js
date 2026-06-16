@@ -7,9 +7,70 @@ const map = L.map("map", {
     doubleClickZoom: false
 }).setView([23.5, 80], 4.8);
 
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    attribution: "&copy; OpenStreetMap & CARTO"
-}).addTo(map);
+//-------------CARTO Dark Matter View-------------//
+
+// L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+//     attribution: "&copy; OpenStreetMap & CARTO"
+// }).addTo(map);
+
+//-------------OpenStreetMap Standard View-------------//----------------Recommended
+
+// L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+//     attribution: "&copy; OpenStreetMap"
+// }).addTo(map);
+
+//-------------CARTO Voyager View-------------//----------------Recommended
+
+L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    {
+        attribution: "&copy; OpenStreetMap & CARTO"
+    }
+).addTo(map);
+
+//-------------Satellite View-------------//
+
+// L.tileLayer(
+//   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+//   {
+//     attribution: 'Tiles © Esri'
+//   }
+// ).addTo(map);
+
+//-------------Terrain View-------------//
+
+// L.tileLayer(
+//   'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+//   {
+//     maxZoom: 17,
+//     attribution: '© OpenTopoMap contributors'
+//   }
+// ).addTo(map);
+
+//-------------Esri World Street Map View-------------//
+
+// L.tileLayer(
+//   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+// ).addTo(map);
+
+//-------------Esri World Gray Canvas View-------------//
+
+// L.tileLayer(
+//   "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+// ).addTo(map);
+
+//-------------Esri National Geographic View-------------//----------------Recommended
+
+// L.tileLayer(
+//   "https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}"
+// ).addTo(map);
+
+//-------------Esri World Gray Canvas View-------------//
+
+// L.tileLayer(
+//   "https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg"
+// ).addTo(map);
+
 
 map.createPane("statesPane");
 map.createPane("markerPane");
