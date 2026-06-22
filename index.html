@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITM Observation Portal</title>
+    <title>IITM Observational Facilities Portal</title>
+    <meta name="description" content="Interactive map of IITM observation instruments across India.">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=20260610-3">
+    <link rel="stylesheet" href="style.css?v=20260622-1">
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet"
@@ -52,8 +53,8 @@
             </button>
 
             <div class="sidebar-head">
-                <h2>Instrument List</h2>
-                <span id="resultCount" class="result-count">0</span>
+                <h2>Instruments</h2>
+                <span id="resultCount" class="result-count" title="Matching instruments">0</span>
             </div>
 
             <!-- Search -->
@@ -83,9 +84,6 @@
                 <select id="locationFilter">
                     <option value="">All Locations</option>
                 </select>
-<!-- 
-                <label>Date</label>
-                <input type="date" id="dateFilter"> -->
 
                 <button id="resetFilters" class="reset-btn">
                     Reset Filters
@@ -93,8 +91,10 @@
 
             </div>
 
-            <!-- Instrument List -->
-            <div id="instrumentList" class="instrument-list"></div>
+            <!-- Helper hint replaces the removed instrument list -->
+            <div class="sidebar-hint">
+                <p><b>Tip:</b> Click a district marker on the map to reveal its individual observation locations. Click an empty area of the map or double‑click to reset the view.</p>
+            </div>
 
         </aside>
 
@@ -105,12 +105,27 @@
 
     </div>
 
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-credits">
+            <span><b>Developed by:</b> Nikhil K.</span>
+            <span><b>Meteorological Data:</b> Mr. Chiranjivi</span>
+            <span><b>Guided by:</b> Dr. Subrata Das</span>
+        </div>
+        <div class="footer-contact">
+            <span><b>Address:</b> Indian Institute of Tropical Meteorology (IITM), Dr. Homi Bhabha Road, Pashan, Pune - 411 008, India</span>
+            <span><b>Tel:</b> +91 (020) 2590 4200</span>
+            <span><b>Fax:</b> +91 (020) 2586 5142</span>
+        </div>
+    </footer>
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
 
     <!-- JS File -->
-    <script src="script.js?v=20260610-6"></script>
+    <script src="script.js?v=20260622-1"></script>
 
 </body>
 </html>
