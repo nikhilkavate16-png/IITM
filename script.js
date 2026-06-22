@@ -2,84 +2,64 @@
 // CREATE MAP
 // ========================================
 
+const indiaBounds = L.latLngBounds([6.0, 67.0], [38.5, 98.5]);
+
 const map = L.map("map", {
     zoomControl: true,
-    doubleClickZoom: false
+    doubleClickZoom: false,
+    maxBounds: indiaBounds,
+    maxBoundsViscosity: 1.0,
+    minZoom: 4.4,
+    maxZoom: 14
 }).setView([23.5, 80], 4.8);
 
-//-------------CARTO Dark Matter View-------------//
+function updateMarkerLabelScale() {
+    const container = map.getContainer();
+    const zoom = map.getZoom();
+    container.classList.toggle("map-zoom-low", zoom < 5.6);
+    container.classList.toggle("map-zoom-mid", zoom >= 5.6 && zoom < 7.5);
+    container.classList.toggle("map-zoom-high", zoom >= 7.5);
+}
 
-// L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-//     attribution: "&copy; OpenStreetMap & CARTO"
-// }).addTo(map);
-
-//-------------OpenStreetMap Standard View-------------//
-
-// L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-//     attribution: "&copy; OpenStreetMap"
-// }).addTo(map);
-
-//-------------CARTO Voyager View-------------//----------------Recommended
-
-// L.tileLayer(
-//     "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-//     {
-//         attribution: "&copy; OpenStreetMap & CARTO"
-//     }
-// ).addTo(map);
-
-//-------------Satellite View-------------//
-
-// L.tileLayer(
-//   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-//   {
-//     attribution: 'Tiles © Esri'
-//   }
-// ).addTo(map);
-
-//-------------Terrain View-------------//
-
-// L.tileLayer(
-//   'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-//   {
-//     maxZoom: 17,
-//     attribution: '© OpenTopoMap contributors'
-//   }
-// ).addTo(map);
-
-//-------------Esri World Street Map View-------------//----------------Recommended
+map.whenReady(updateMarkerLabelScale);
+map.on("zoomend", updateMarkerLabelScale);
 
 L.tileLayer(
-  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
 ).addTo(map);
 
-//-------------Esri World Gray Canvas View-------------//
-
-// L.tileLayer(
-//   "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
-// ).addTo(map);
-
-//-------------Esri National Geographic View-------------//----------------Recommended
-
-// L.tileLayer(
-//   "https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}"
-// ).addTo(map);
-
-//-------------Gray Canvas View-------------//
-
-// L.tileLayer(
-//   "https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg"
-// ).addTo(map);
-
-
 map.createPane("statesPane");
+map.createPane("districtPane");
 map.createPane("markerPane");
 map.getPane("statesPane").style.zIndex = 400;
+map.getPane("districtPane").style.zIndex = 520;
 map.getPane("markerPane").style.zIndex = 650;
 
+const locationMarkerIcon = L.divIcon({
+    className: "custom-map-marker location-map-marker",
+    html: '<span class="marker-pin" aria-hidden="true"></span>',
+    iconSize: [24, 34],
+    iconAnchor: [12, 32],
+    popupAnchor: [0, -30],
+    tooltipAnchor: [0, -30]
+});
+
+const districtMarkerIcon = L.divIcon({
+    className: "",
+    html: `<img src="district-marker.gif" style="width:50px;height:50px;" onerror="this.style.display='none'">`,
+    iconSize: [50, 50],
+    iconAnchor: [25, 50]
+});
+
 let allMarkers = [];
+let allDistrictMarkers = [];
+let activeDistrictMarkers = [];
 let statesLayer;
+let districtFeatures = [];
+let selectedDistrictLayer;
+let selectedDistrictGroup = null;
 let currentLocationGroups = [];
+let currentDistrictGroups = [];
 
 // ========================================
 // SIDEBAR AND FILTER CONTROLS
@@ -94,11 +74,8 @@ function setSidebarCollapsed(collapsed) {
     sidebar.classList.toggle("collapsed", collapsed);
     sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
     sidebarToggle.setAttribute("aria-label", collapsed ? "Open sidebar" : "Hide sidebar");
-    sidebarToggle.setAttribute("title", collapsed ? "Open instrument list" : "Hide instrument list");
-
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 260);
+    sidebarToggle.setAttribute("title", collapsed ? "Open sidebar" : "Hide sidebar");
+    setTimeout(() => { map.invalidateSize(); }, 260);
 }
 
 sidebarToggle.addEventListener("click", () => {
@@ -114,13 +91,9 @@ if (window.matchMedia("(max-width: 900px)").matches) {
     setSidebarCollapsed(true);
 }
 
-window.addEventListener("resize", () => {
-    map.invalidateSize();
-});
+window.addEventListener("resize", () => { map.invalidateSize(); });
 
-function safeText(value) {
-    return String(value || "");
-}
+function safeText(value) { return String(value || ""); }
 
 function escapeHTML(value) {
     return safeText(value)
@@ -142,7 +115,6 @@ function normalizeInstrumentData(data) {
     if (data.some(item => Array.isArray(item.instruments))) {
         return data.flatMap((location, locationIndex) => {
             const instruments = Array.isArray(location.instruments) ? location.instruments : [];
-
             return instruments.map((instrument, instrumentIndex) => ({
                 id: `${locationIndex}-${instrumentIndex}`,
                 instrument_name: safeText(instrument.instrument_name),
@@ -171,41 +143,32 @@ function normalizeInstrumentData(data) {
 }
 
 // ========================================
-// READ-ONLY INSTRUMENT TABLE
+// INSTRUMENT TABLE MODAL
 // ========================================
 
 function buildLocationPopup(locationGroup, index) {
-    const selectedInstrumentFromCard = locationGroup.selectedInstrumentId
-        ? locationGroup.instruments.find(instrument => String(instrument.id) === String(locationGroup.selectedInstrumentId))
+    const selectedInstrument = locationGroup.selectedInstrumentId
+        ? locationGroup.instruments.find(i => String(i.id) === String(locationGroup.selectedInstrumentId))
         : null;
-    const selectedInstrument = selectedInstrumentFromCard ||
-        (locationGroup.hasActiveFilters ? locationGroup.instruments[0] : null);
     const selectedParam = selectedInstrument
         ? `, ${escapeHTML(JSON.stringify(String(selectedInstrument.id)))}`
         : "";
-    const allButtonLabel = locationGroup.hasActiveFilters
-        ? "View All Instruments"
-        : "View Instruments";
+    const allButtonLabel = locationGroup.hasActiveFilters ? "View All Instruments" : "View Instruments";
 
     let popupButtons = `
         <button type="button" class="popup-view-btn" onclick="openInstrumentTable(${index})">
             ${allButtonLabel}
-        </button>
-    `;
+        </button>`;
 
     if (selectedInstrument) {
         popupButtons = locationGroup.hasActiveFilters
-            ? `
-                ${popupButtons}
+            ? `${popupButtons}
                 <button type="button" class="popup-view-btn popup-secondary-btn" onclick="openInstrumentTable(${index}${selectedParam})">
                     View Selected Instrument
-                </button>
-            `
-            : `
-                <button type="button" class="popup-view-btn" onclick="openInstrumentTable(${index}${selectedParam})">
+                </button>`
+            : `<button type="button" class="popup-view-btn" onclick="openInstrumentTable(${index}${selectedParam})">
                     View Instrument
-                </button>
-            `;
+                </button>`;
     }
 
     return `
@@ -216,8 +179,7 @@ function buildLocationPopup(locationGroup, index) {
             <p><b>Matching Instruments:</b> ${locationGroup.instruments.length}</p>
             ${selectedInstrument ? `<p><b>Selected:</b> ${escapeHTML(displayValue(selectedInstrument.instrument_name, "Unnamed Instrument"))}</p>` : ""}
             ${popupButtons}
-        </div>
-    `;
+        </div>`;
 }
 
 function openInstrumentTable(index, selectedInstrumentId = "") {
@@ -226,7 +188,7 @@ function openInstrumentTable(index, selectedInstrumentId = "") {
 
     const tableSource = locationGroup.allInstruments || locationGroup.instruments;
     const tableInstruments = selectedInstrumentId
-        ? tableSource.filter(instrument => String(instrument.id) === String(selectedInstrumentId))
+        ? tableSource.filter(i => String(i.id) === String(selectedInstrumentId))
         : tableSource;
 
     document.getElementById("instrumentTableTitle").innerText =
@@ -245,8 +207,7 @@ function openInstrumentTable(index, selectedInstrumentId = "") {
                 <td>${escapeHTML(displayValue(instrument.category))}</td>
                 <td>${escapeHTML(displayValue(instrument.objective))}</td>
                 <td>${escapeHTML(displayValue(instrument.description))}</td>
-            </tr>
-        `).join("");
+            </tr>`).join("");
 
     document.getElementById("instrumentTableModal").classList.add("show");
 }
@@ -268,74 +229,155 @@ function createInstrumentTableModal() {
                 </div>
                 <button type="button" class="modal-close-btn" onclick="closeInstrumentTable()">Close</button>
             </div>
-
             <div class="instrument-table-wrapper">
                 <table class="full-instrument-table">
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Instrument</th>
-                            <th>Date</th>
-                            <th>Category</th>
-                            <th>Objective</th>
-                            <th>Description</th>
+                            <th>#</th><th>Instrument</th><th>Date</th>
+                            <th>Category</th><th>Objective</th><th>Description</th>
                         </tr>
                     </thead>
                     <tbody id="instrumentTableBody"></tbody>
                 </table>
             </div>
-        </div>
-    `;
-
-    modal.addEventListener("click", event => {
-        if (event.target === modal) closeInstrumentTable();
-    });
-
-    document.addEventListener("keydown", event => {
-        if (event.key === "Escape") closeInstrumentTable();
-    });
-
+        </div>`;
+    modal.addEventListener("click", e => { if (e.target === modal) closeInstrumentTable(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeInstrumentTable(); });
     document.body.appendChild(modal);
 }
 
 createInstrumentTableModal();
 
 // ========================================
+// DISTRICT GEOMETRY HELPERS
+// ========================================
+
+function getDistrictName(feature) {
+    return feature.properties.district || feature.properties.DISTRICT ||
+        feature.properties.dtname || feature.properties.NAME_2 ||
+        feature.properties.name || "Unknown District";
+}
+
+function getDistrictStateName(feature) {
+    return feature.properties.st_nm || feature.properties.STATE_NAME ||
+        feature.properties.state || feature.properties.NAME_1 || "";
+}
+
+function clearSelectedDistrict() {
+    if (selectedDistrictLayer) {
+        map.removeLayer(selectedDistrictLayer);
+        selectedDistrictLayer = null;
+    }
+    selectedDistrictGroup = null;
+}
+
+function getDistrictForPoint(lat, lon) {
+    if (!districtFeatures.length) return null;
+    const point = turf.point([lon, lat]);
+    return districtFeatures.find(feature => {
+        if (feature.bbox) {
+            const [minLon, minLat, maxLon, maxLat] = feature.bbox;
+            if (lon < minLon || lon > maxLon || lat < minLat || lat > maxLat) return false;
+        }
+        return turf.booleanPointInPolygon(point, feature);
+    }) || null;
+}
+
+// Show district markers (default view). Removes all location markers.
+function showDistrictMarkers() {
+    clearSelectedDistrict();
+    allMarkers.forEach(m => map.removeLayer(m));
+    allDistrictMarkers.forEach(m => map.removeLayer(m));
+    activeDistrictMarkers = [...allDistrictMarkers];
+    activeDistrictMarkers.forEach(m => m.addTo(map));
+}
+
+// Selecting a district: hide ONLY that district's marker, keep every other
+// district marker visible, and reveal the selected district's location markers.
+function showLocationMarkersForDistrict(districtGroup) {
+    // Determine which district markers are currently "active" (e.g. after a
+    // state filter). If none, fall back to all districts.
+    const baseDistrictMarkers = activeDistrictMarkers.length
+        ? activeDistrictMarkers
+        : [...allDistrictMarkers];
+
+    // Strip everything off the map cleanly.
+    allMarkers.forEach(m => map.removeLayer(m));
+    allDistrictMarkers.forEach(m => map.removeLayer(m));
+
+    // Re-add every district marker EXCEPT the one the user clicked.
+    baseDistrictMarkers.forEach(m => {
+        if (m !== districtGroup.marker) m.addTo(map);
+    });
+
+    // Reveal the location markers inside the selected district.
+    districtGroup.locationGroups.forEach(lg => lg.marker.addTo(map));
+
+    // Highlight the selected district polygon (if we have geometry for it).
+    clearSelectedDistrict();
+    selectedDistrictGroup = districtGroup;
+    if (districtGroup.feature) {
+        selectedDistrictLayer = L.geoJSON(districtGroup.feature, {
+            pane: "districtPane",
+            style: {
+                color: "#00ffff", weight: 2.5, opacity: 1,
+                fillColor: "#ff9800", fillOpacity: 0.2
+            }
+        }).addTo(map);
+    }
+
+    if (districtGroup.bounds && districtGroup.bounds.isValid()) {
+        const locationBounds = districtGroup.locationGroups.reduce(
+            (bounds, lg) => bounds.extend([lg.lat, lg.lon]),
+            L.latLngBounds([districtGroup.locationGroups[0].lat, districtGroup.locationGroups[0].lon])
+        );
+        let targetBounds = locationBounds.isValid() ? locationBounds : districtGroup.bounds;
+        // For a single-location district, add a small buffer so fitBounds doesn't over-zoom.
+        const ne = targetBounds.getNorthEast();
+        const sw = targetBounds.getSouthWest();
+        if (ne.lat === sw.lat && ne.lng === sw.lng) {
+            const buffer = 0.015;
+            targetBounds = L.latLngBounds(
+                [sw.lat - buffer, sw.lng - buffer],
+                [ne.lat + buffer, ne.lng + buffer]
+            );
+        }
+        map.fitBounds(targetBounds, { padding: [80, 80], maxZoom: 12, animate: true });
+    }
+}
+
+fetch("geoindia_district.json")
+    .then(r => r.json())
+    .then(data => {
+        if (!window.topojson) throw new Error("TopoJSON library is not loaded");
+        const objectName = Object.keys(data.objects)[0];
+        const districtCollection = topojson.feature(data, data.objects[objectName]);
+        districtFeatures = districtCollection.features.map(f => {
+            f.bbox = turf.bbox(f);
+            return f;
+        });
+        if (typeof window.refreshInstrumentMarkers === "function") {
+            window.refreshInstrumentMarkers();
+        }
+    })
+    .catch(err => console.log("District TopoJSON Error:", err));
+
+// ========================================
 // INDIA STATES GEOJSON
 // ========================================
 
 fetch("geoindia.geojson")
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
         function defaultStyle() {
-            return {
-                color: "#ffffff",
-                weight: 1.5,
-                opacity: 1,
-                fillColor: "#666666",
-                fillOpacity: 0.35
-            };
+            return { color: "#ffffff", weight: 1.5, opacity: 1, fillColor: "#666666", fillOpacity: 0.35 };
         }
-
         function hoverStyle() {
-            return {
-                color: "#ffffff",
-                weight: 2,
-                fillColor: "#ff9800",
-                fillOpacity: 0.6
-            };
+            return { color: "#ffffff", weight: 2, fillColor: "#ff5722", fillOpacity: 0.6 };
         }
-
         function selectedStyle() {
-            return {
-                color: "#00ffff",
-                weight: 3,
-                opacity: 1,
-                fillColor: "#ff5722",
-                fillOpacity: 0.6
-            };
+            return { color: "#00ffff", weight: 3, opacity: 1, fillColor: "#ff9800", fillOpacity: 0.6 };
         }
-
         function resetStates() {
             statesLayer.eachLayer(layer => {
                 layer.selected = false;
@@ -349,42 +391,23 @@ fetch("geoindia.geojson")
             style: defaultStyle,
             onEachFeature: function(feature, layer) {
                 const stateName =
-                    feature.properties.shapeName ||
-                    feature.properties.STATE_NAME ||
-                    feature.properties.st_nm ||
-                    feature.properties.NAME_1 ||
-                    feature.properties.name ||
-                    "Unknown";
-
+                    feature.properties.shapeName || feature.properties.STATE_NAME ||
+                    feature.properties.st_nm || feature.properties.NAME_1 ||
+                    feature.properties.name || "Unknown";
                 layer.stateName = stateName;
 
-                layer.bindTooltip(stateName, {
-                    sticky: false,
-                    direction: "top",
-                    className: "state-tooltip"
-                });
+                layer.bindTooltip(stateName, { sticky: false, direction: "top", className: "state-tooltip" });
 
-                layer.on("mouseover", function(e) {
-                    if (!layer.selected) {
-                        layer.openTooltip(e.latlng);
-                        layer.setStyle(hoverStyle());
-                    }
+                layer.on("mouseover", e => {
+                    if (!layer.selected) { layer.openTooltip(e.latlng); layer.setStyle(hoverStyle()); }
                 });
-
-                layer.on("mousemove", function(e) {
-                    if (!layer.selected) {
-                        layer.getTooltip().setLatLng(e.latlng);
-                    }
+                layer.on("mousemove", e => {
+                    if (!layer.selected) layer.getTooltip().setLatLng(e.latlng);
                 });
-
-                layer.on("mouseout", function() {
-                    if (!layer.selected) {
-                        layer.closeTooltip();
-                        layer.setStyle(defaultStyle());
-                    }
+                layer.on("mouseout", () => {
+                    if (!layer.selected) { layer.closeTooltip(); layer.setStyle(defaultStyle()); }
                 });
-
-                layer.on("click", function() {
+                layer.on("click", () => {
                     resetStates();
                     layer.selected = true;
                     layer.setStyle(selectedStyle());
@@ -398,18 +421,15 @@ fetch("geoindia.geojson")
 
         statesLayer.bringToFront();
     })
-    .catch(error => {
-        console.log("State GeoJSON Error:", error);
-    });
+    .catch(err => console.log("State GeoJSON Error:", err));
 
 // ========================================
 // LOAD INSTRUMENTS
 // ========================================
 
 fetch("instruments.json")
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
-        const instrumentList = document.getElementById("instrumentList");
         const resultCount = document.getElementById("resultCount");
         const searchInput = document.getElementById("searchInput");
         const instrumentFilter = document.getElementById("instrumentFilter");
@@ -446,53 +466,31 @@ fetch("instruments.json")
 
         function hasActiveFilters(selections = getFilterSelections()) {
             return Boolean(
-                searchInput.value.trim() ||
-                selections.instrument ||
-                selections.location ||
-                selections.category
+                searchInput.value.trim() || selections.instrument ||
+                selections.location || selections.category
             );
         }
 
         function setSelectOptions(select, allLabel, values, currentValue) {
             select.innerHTML = "";
-
             const allOption = document.createElement("option");
             allOption.value = "";
             allOption.textContent = allLabel;
             select.appendChild(allOption);
-
-            values
-                .sort((a, b) => a.localeCompare(b))
-                .forEach(value => {
-                    const option = document.createElement("option");
-                    option.value = value;
-                    option.textContent = value;
-                    select.appendChild(option);
-                });
-
+            values.sort((a, b) => a.localeCompare(b)).forEach(value => {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            });
             select.value = values.includes(currentValue) ? currentValue : "";
         }
 
         function populateFilters(selections = getFilterSelections()) {
             const filterConfigs = [
-                {
-                    key: "category",
-                    select: categoryFilter,
-                    field: "category",
-                    allLabel: "All Categories"
-                },
-                {
-                    key: "instrument",
-                    select: instrumentFilter,
-                    field: "instrument_name",
-                    allLabel: "All Instruments"
-                },
-                {
-                    key: "location",
-                    select: locationFilter,
-                    field: "location_name",
-                    allLabel: "All Locations"
-                }
+                { key: "category", select: categoryFilter, field: "category", allLabel: "All Categories" },
+                { key: "instrument", select: instrumentFilter, field: "instrument_name", allLabel: "All Instruments" },
+                { key: "location", select: locationFilter, field: "location_name", allLabel: "All Locations" }
             ];
 
             let clearedInvalidSelection = false;
@@ -517,16 +515,16 @@ fetch("instruments.json")
         }
 
         function renderData(filteredData, filtersActive = false) {
-            instrumentList.innerHTML = "";
             resultCount.innerText = filteredData.length;
 
-            markerObjects.forEach(obj => {
-                map.removeLayer(obj.marker);
-            });
-
+            markerObjects.forEach(obj => map.removeLayer(obj.marker));
             markerObjects = [];
             allMarkers = [];
+            allDistrictMarkers = [];
+            activeDistrictMarkers = [];
             currentLocationGroups = [];
+            currentDistrictGroups = [];
+            clearSelectedDistrict();
 
             const visibleLocations = new Map();
             const allInstrumentsByLocation = new Map();
@@ -534,103 +532,29 @@ fetch("instruments.json")
             allData.forEach(instrument => {
                 const lat = parseFloat(instrument.latitude);
                 const lon = parseFloat(instrument.longitude);
-
                 if (Number.isNaN(lat) || Number.isNaN(lon)) return;
-
-                const locationKey = [
-                    instrument.location_name,
-                    lat.toFixed(6),
-                    lon.toFixed(6)
-                ].join("|");
-
-                if (!allInstrumentsByLocation.has(locationKey)) {
-                    allInstrumentsByLocation.set(locationKey, []);
-                }
-
+                const locationKey = [instrument.location_name, lat.toFixed(6), lon.toFixed(6)].join("|");
+                if (!allInstrumentsByLocation.has(locationKey)) allInstrumentsByLocation.set(locationKey, []);
                 allInstrumentsByLocation.get(locationKey).push(instrument);
             });
 
             filteredData.forEach(instrument => {
                 const lat = parseFloat(instrument.latitude);
                 const lon = parseFloat(instrument.longitude);
-
                 if (Number.isNaN(lat) || Number.isNaN(lon)) return;
 
-                let detectedState = "Unknown";
-
-                if (statesLayer) {
-                    statesLayer.eachLayer(stateLayer => {
-                        if (stateLayer.getBounds().contains([lat, lon])) {
-                            detectedState = stateLayer.stateName;
-                        }
-                    });
-                }
-
-                const locationKey = [
-                    instrument.location_name,
-                    lat.toFixed(6),
-                    lon.toFixed(6)
-                ].join("|");
+                const locationKey = [instrument.location_name, lat.toFixed(6), lon.toFixed(6)].join("|");
 
                 if (!visibleLocations.has(locationKey)) {
                     visibleLocations.set(locationKey, {
-                        lat,
-                        lon,
+                        lat, lon,
                         locationName: instrument.location_name,
                         hasActiveFilters: filtersActive,
                         allInstruments: allInstrumentsByLocation.get(locationKey) || [],
                         instruments: []
                     });
                 }
-
                 visibleLocations.get(locationKey).instruments.push(instrument);
-
-                const card = document.createElement("div");
-                card.className = "instrument-card";
-                card.tabIndex = 0;
-                card.setAttribute("role", "button");
-                card.setAttribute("aria-label", `Show ${instrument.instrument_name} on map`);
-
-                card.innerHTML = `
-                    <h3>${escapeHTML(instrument.instrument_name || "Unnamed Instrument")}</h3>
-                    <p>${escapeHTML(instrument.location_name || "Location not added")}</p>
-                    <p>${escapeHTML(detectedState)}</p>
-                    <p>${escapeHTML(instrument.category || "Category not added")}</p>
-                    <p>${escapeHTML(instrument.installation_date || "Date not added")}</p>
-                `;
-
-                function focusInstrument() {
-                    document.querySelectorAll(".instrument-card.active").forEach(activeCard => {
-                        activeCard.classList.remove("active");
-                    });
-
-                    card.classList.add("active");
-                    map.setView([lat, lon], 8);
-                    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
-
-                    const locationGroup = visibleLocations.get(locationKey);
-                    if (locationGroup && locationGroup.marker) {
-                        locationGroup.selectedInstrumentId = instrument.id;
-                        locationGroup.marker.setPopupContent(
-                            buildLocationPopup(locationGroup, locationGroup.tableIndex)
-                        );
-                        locationGroup.marker.openPopup();
-                    }
-
-                    if (window.matchMedia("(max-width: 900px)").matches) {
-                        setSidebarCollapsed(true);
-                    }
-                }
-
-                card.addEventListener("click", focusInstrument);
-                card.addEventListener("keydown", event => {
-                    if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        focusInstrument();
-                    }
-                });
-
-                instrumentList.appendChild(card);
             });
 
             currentLocationGroups = Array.from(visibleLocations.values());
@@ -639,54 +563,96 @@ fetch("instruments.json")
                 locationGroup.tableIndex = locationIndex;
 
                 const marker = L.marker([locationGroup.lat, locationGroup.lon], {
-                    pane: "markerPane"
+                    pane: "markerPane",
+                    icon: locationMarkerIcon,
+                    title: locationGroup.locationName || "Location"
                 })
                     .bindTooltip(locationGroup.locationName || "Location", {
                         permanent: true,
                         direction: "top",
-                        offset: [-15, -13],
+                        offset: [-1, -4],
                         className: "marker-label"
                     })
                     .bindPopup(buildLocationPopup(locationGroup, locationIndex));
 
-                marker.addTo(map);
                 locationGroup.marker = marker;
-
-                markerObjects.push({
-                    marker: marker,
-                    data: locationGroup
-                });
-
+                markerObjects.push({ marker, data: locationGroup });
                 allMarkers.push(marker);
 
                 marker.on("click", () => {
                     locationGroup.selectedInstrumentId = "";
                     marker.setPopupContent(buildLocationPopup(locationGroup, locationIndex));
-
-                    const firstInstrument = locationGroup.instruments[0];
-                    const firstCard = Array.from(document.querySelectorAll(".instrument-card"))
-                        .find(card => card.getAttribute("aria-label") === `Show ${firstInstrument.instrument_name} on map`);
-
-                    document.querySelectorAll(".instrument-card.active").forEach(activeCard => {
-                        activeCard.classList.remove("active");
-                    });
-
-                    if (firstCard) {
-                        firstCard.classList.add("active");
-                        firstCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                    }
-
                 });
             });
+
+            // Build district groups from visible location groups.
+            const districtGroups = new Map();
+
+            currentLocationGroups.forEach(locationGroup => {
+                const districtFeature = getDistrictForPoint(locationGroup.lat, locationGroup.lon);
+                const districtName = districtFeature ? getDistrictName(districtFeature) : "Unknown District";
+                const stateName = districtFeature ? getDistrictStateName(districtFeature) : "";
+                const districtKey = districtFeature
+                    ? `${stateName}|${districtName}`
+                    : `unknown|${locationGroup.locationName}|${locationGroup.lat.toFixed(6)}|${locationGroup.lon.toFixed(6)}`;
+
+                if (!districtGroups.has(districtKey)) {
+                    const districtBounds = districtFeature
+                        ? L.geoJSON(districtFeature).getBounds()
+                        : L.latLngBounds([[locationGroup.lat, locationGroup.lon]]);
+                    districtGroups.set(districtKey, {
+                        districtName, stateName,
+                        feature: districtFeature,
+                        bounds: districtBounds,
+                        locationGroups: []
+                    });
+                }
+
+                const districtGroup = districtGroups.get(districtKey);
+                districtGroup.locationGroups.push(locationGroup);
+                locationGroup.districtGroup = districtGroup;
+
+                if (!districtGroup.bounds.contains([locationGroup.lat, locationGroup.lon])) {
+                    districtGroup.bounds.extend([locationGroup.lat, locationGroup.lon]);
+                }
+            });
+
+            currentDistrictGroups = Array.from(districtGroups.values());
+
+            currentDistrictGroups.forEach(districtGroup => {
+                const sum = districtGroup.locationGroups.reduce((acc, lg) => {
+                    acc.lat += lg.lat; acc.lon += lg.lon; return acc;
+                }, { lat: 0, lon: 0 });
+                const count = districtGroup.locationGroups.length;
+                const center = [sum.lat / count, sum.lon / count];
+
+                const districtMarker = L.marker(center, {
+                    pane: "markerPane",
+                    icon: districtMarkerIcon,
+                    title: districtGroup.districtName
+                })
+                    .bindTooltip(districtGroup.districtName, {
+                        permanent: true,
+                        direction: "top",
+                        offset: [-1, -45],
+                        className: "marker-label district-marker-label"
+                    });
+
+                districtMarker.on("click", () => {
+                    showLocationMarkersForDistrict(districtGroup);
+                });
+
+                districtGroup.marker = districtMarker;
+                allDistrictMarkers.push(districtMarker);
+                markerObjects.push({ marker: districtMarker, data: districtGroup });
+            });
+
+            showDistrictMarkers();
         }
 
         function applyFilters() {
             let selections = getFilterSelections();
-
-            while (populateFilters(selections)) {
-                selections = getFilterSelections();
-            }
-
+            while (populateFilters(selections)) selections = getFilterSelections();
             renderData(getFilteredData(selections), hasActiveFilters(selections));
         }
 
@@ -694,6 +660,7 @@ fetch("instruments.json")
         instrumentFilter.addEventListener("change", applyFilters);
         locationFilter.addEventListener("change", applyFilters);
         categoryFilter.addEventListener("change", applyFilters);
+        window.refreshInstrumentMarkers = applyFilters;
 
         resetFilters.addEventListener("click", () => {
             searchInput.value = "";
@@ -713,18 +680,19 @@ fetch("instruments.json")
 // ========================================
 
 function filterMarkers(clickedLayer) {
-    allMarkers.forEach(marker => {
-        map.removeLayer(marker);
-    });
+    allMarkers.forEach(m => map.removeLayer(m));
+    allDistrictMarkers.forEach(m => map.removeLayer(m));
+    clearSelectedDistrict();
+    activeDistrictMarkers = [];
 
     const stateGeoJSON = clickedLayer.toGeoJSON();
 
-    allMarkers.forEach(marker => {
+    allDistrictMarkers.forEach(marker => {
         const latlng = marker.getLatLng();
         const point = turf.point([latlng.lng, latlng.lat]);
-
         if (turf.booleanPointInPolygon(point, stateGeoJSON)) {
             marker.addTo(map);
+            activeDistrictMarkers.push(marker);
         }
     });
 }
@@ -734,22 +702,16 @@ function filterMarkers(clickedLayer) {
 // ========================================
 
 map.on("dblclick", function() {
-    map.setView([23.5, 80], 4.8);
-
+    map.fitBounds(indiaBounds);
     if (statesLayer) {
         statesLayer.eachLayer(layer => {
             layer.selected = false;
             layer.closeTooltip();
             layer.setStyle({
-                color: "#ffffff",
-                weight: 1.5,
-                fillColor: "#666666",
-                fillOpacity: 0.35
+                color: "#ffffff", weight: 1.5,
+                fillColor: "#666666", fillOpacity: 0.35
             });
         });
     }
-
-    allMarkers.forEach(marker => {
-        marker.addTo(map);
-    });
+    showDistrictMarkers();
 });
