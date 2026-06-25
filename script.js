@@ -69,6 +69,11 @@ const sidebar = document.getElementById("sidebar");
 const sidebarToggle = document.getElementById("sidebarToggle");
 const filterBtn = document.getElementById("filterBtn");
 const filterPanel = document.getElementById("filterPanel");
+const projectsBtn = document.getElementById("projectsBtn");
+const projectsPanel = document.getElementById("projectsPanel");
+const projectsTreeEl = document.getElementById("projectsTree");
+const clearProjectBtn = document.getElementById("clearProjectSelection");
+const projectSelectedLabelEl = document.getElementById("projectSelectedLabel");
 
 function setSidebarCollapsed(collapsed) {
     sidebar.classList.toggle("collapsed", collapsed);
@@ -85,6 +90,12 @@ sidebarToggle.addEventListener("click", () => {
 filterBtn.addEventListener("click", () => {
     const isOpen = filterPanel.classList.toggle("show");
     filterBtn.setAttribute("aria-expanded", String(isOpen));
+});
+
+projectsBtn.addEventListener("click", () => {
+    const isOpen = projectsPanel.classList.toggle("show");
+    projectsBtn.setAttribute("aria-expanded", String(isOpen));
+    projectsPanel.setAttribute("aria-hidden", String(!isOpen));
 });
 
 if (window.matchMedia("(max-width: 900px)").matches) {
@@ -124,7 +135,11 @@ function normalizeInstrumentData(data) {
                 installation_date: safeText(instrument.installation_date),
                 category: safeText(instrument.category),
                 objective: safeText(instrument.objective),
-                description: safeText(instrument.description)
+                description: safeText(instrument.description),
+                project: safeText(instrument.project),
+                network: safeText(instrument.network),
+                sensor_type: safeText(instrument.sensor_type),
+                measurement: safeText(instrument.measurement)
             }));
         });
     }
@@ -138,8 +153,135 @@ function normalizeInstrumentData(data) {
         installation_date: safeText(instrument.installation_date),
         category: safeText(instrument.category),
         objective: safeText(instrument.objective),
-        description: safeText(instrument.description)
+        description: safeText(instrument.description),
+        project: safeText(instrument.project),
+        network: safeText(instrument.network),
+        sensor_type: safeText(instrument.sensor_type),
+        measurement: safeText(instrument.measurement)
     }));
+}
+
+// ========================================
+// PROJECT TREE CONFIGURATION
+// ========================================
+// Each leaf carries a `match` predicate that runs against a normalized
+// instrument record. Parent nodes inherit the union of their children's matches.
+// Tree structure provided by the user (5 roots).
+
+function txt(v) { return safeText(v).trim().toLowerCase(); }
+function eqProject(...names) {
+    const set = new Set(names.map(n => n.toLowerCase()));
+    return (it) => set.has(txt(it.project));
+}
+function eqNetwork(...names) {
+    const set = new Set(names.map(n => n.toLowerCase()));
+    return (it) => set.has(txt(it.network));
+}
+function projectAndLocation(project, locSubstrings) {
+    const p = project.toLowerCase();
+    const subs = locSubstrings.map(s => s.toLowerCase());
+    return (it) => txt(it.project) === p && subs.some(s => txt(it.location_name).includes(s));
+}
+function any(...predicates) { return (it) => predicates.some(fn => fn(it)); }
+
+const projectTreeConfig = [
+    {
+        id: "art",
+        label: "ART",
+        children: [
+            { id: "art-silkheda", label: "ART-CI, Silkheda", match: eqProject("ART, Silkheda") },
+            { id: "art-mesonet",  label: "MESONET & Mumbai Radar", match: eqProject("ART, MESONET & Mumbai Radar") },
+            { id: "art-hacpl",    label: "HACPL, Mahabhaleswar", match: eqProject("ART-HACPL") },
+            { id: "art-testbed",  label: "Test bed, Visakhapatnam",
+              match: (it) => txt(it.location_name).includes("visakhapatnam") || txt(it.location_name).includes("vishakhapatnam") },
+            { id: "art-laurus",   label: "LAURUS", match: eqProject("LAURUS") },
+            { id: "art-disdro",   label: "Disdrometer network", match: eqNetwork("Disdrometer Network") }
+        ]
+    },
+    {
+        id: "caipeex",
+        label: "CAIPEEX",
+        children: [
+            { id: "cai-solapur",  label: "Solapur",  match: (it) => txt(it.location_name).includes("solapur") },
+            { id: "cai-tuljapur", label: "Tuljapur", match: (it) => txt(it.location_name).includes("tuljapur") },
+            { id: "cai-chennai",  label: "Chennai",  match: (it) => txt(it.location_name).includes("chennai") },
+            {
+                id: "cai-delhi",
+                label: "Delhi",
+                children: [
+                    { id: "cai-delhi-iitm", label: "IITM branch office",
+                      match: (it) => txt(it.location_name).includes("delhi") && txt(it.location_name).includes("iitm") },
+                    { id: "cai-delhi-pb",   label: "Prithvi Bhavan, MoES",
+                      match: (it) => txt(it.location_name).includes("prithvi") || txt(it.location_name).includes("moes") },
+                    { id: "cai-delhi-nc",   label: "NCMRWF",
+                      match: (it) => txt(it.location_name).includes("ncmrwf") }
+                ]
+            }
+        ]
+    },
+    {
+        id: "thunderstorm",
+        label: "Thunderstorm Dynamics",
+        match: eqProject("Thunderstorm Dynamics")
+    },
+    {
+        id: "maqws",
+        label: "MAQWS",
+        children: [
+            { id: "maqws-pune",   label: "IITM, Pune", match: projectAndLocation("MAQWS", ["pune", "iitm"]) },
+            { id: "maqws-delhi",  label: "Delhi",      match: projectAndLocation("MAQWS", ["delhi"]) },
+            { id: "maqws-aqnet",  label: "Air Quality monitoring Network",
+              match: (it) => txt(it.project) === "maqws" && !txt(it.location_name).includes("pune") && !txt(it.location_name).includes("delhi") }
+        ]
+    },
+    {
+        id: "cccr",
+        label: "CCCR",
+        children: [
+            { id: "cccr-cosmos",   label: "COSMOS",        match: (it) => txt(it.project).includes("cosmos") || txt(it.instrument_name).includes("cosmos") },
+            { id: "cccr-ghg",      label: "GHGs & Flux",   match: (it) => txt(it.measurement).includes("ghg") || txt(it.sensor_type).includes("ghg") || txt(it.objective).includes("ghg") },
+            { id: "cccr-isotope",  label: "Water Isotope", match: (it) => txt(it.instrument_name).includes("isotope") || txt(it.objective).includes("isotope") },
+            { id: "cccr-rings",    label: "Tree rings",    match: (it) => txt(it.instrument_name).includes("tree ring") || txt(it.objective).includes("tree ring") || txt(it.measurement).includes("dendro") },
+            { id: "cccr-speleo",   label: "Speleothem",    match: (it) => txt(it.instrument_name).includes("speleothem") || txt(it.objective).includes("speleothem") }
+        ]
+    }
+];
+
+// Walk tree and ensure every parent has a derived `match` = OR of all descendant leaf matches.
+function resolveTreeMatchers(nodes) {
+    nodes.forEach(node => {
+        if (node.children && node.children.length) {
+            resolveTreeMatchers(node.children);
+            const childMatchers = node.children.map(c => c.match).filter(Boolean);
+            if (!node.match) node.match = any(...childMatchers);
+        }
+    });
+}
+resolveTreeMatchers(projectTreeConfig);
+
+// Flat index of nodes by id for quick lookups.
+const projectNodeById = new Map();
+(function indexTree(nodes, parent) {
+    nodes.forEach(n => {
+        n.parent = parent || null;
+        n.isLeaf = !(n.children && n.children.length);
+        projectNodeById.set(n.id, n);
+        if (n.children) indexTree(n.children, n);
+    });
+})(projectTreeConfig, null);
+
+let selectedProjectNodeId = null;
+const expandedProjectNodeIds = new Set();
+function getActiveProjectMatcher() {
+    if (!selectedProjectNodeId) return null;
+    const node = projectNodeById.get(selectedProjectNodeId);
+    return node ? node.match : null;
+}
+function projectPathLabel(node) {
+    const parts = [];
+    let cur = node;
+    while (cur) { parts.unshift(cur.label); cur = cur.parent; }
+    return parts.join(" › ");
 }
 
 // ========================================
@@ -153,7 +295,7 @@ function buildLocationPopup(locationGroup, index) {
     const selectedParam = selectedInstrument
         ? `, ${escapeHTML(JSON.stringify(String(selectedInstrument.id)))}`
         : "";
-    const allButtonLabel = locationGroup.hasActiveFilters ? "View All Instruments" : "View Instruments";
+    const allButtonLabel = locationGroup.hasActiveFilters ? "View All Sensors" : "View Instruments";
 
     let popupButtons = `
         <button type="button" class="popup-view-btn" onclick="openInstrumentTable(${index})">
@@ -283,7 +425,6 @@ function getDistrictForPoint(lat, lon) {
     }) || null;
 }
 
-// Show district markers (default view). Removes all location markers.
 function showDistrictMarkers() {
     clearSelectedDistrict();
     allMarkers.forEach(m => map.removeLayer(m));
@@ -292,37 +433,26 @@ function showDistrictMarkers() {
     activeDistrictMarkers.forEach(m => m.addTo(map));
 }
 
-// Selecting a district: hide ONLY that district's marker, keep every other
-// district marker visible, and reveal the selected district's location markers.
 function showLocationMarkersForDistrict(districtGroup) {
-    // Determine which district markers are currently "active" (e.g. after a
-    // state filter). If none, fall back to all districts.
     const baseDistrictMarkers = activeDistrictMarkers.length
         ? activeDistrictMarkers
         : [...allDistrictMarkers];
 
-    // Strip everything off the map cleanly.
     allMarkers.forEach(m => map.removeLayer(m));
     allDistrictMarkers.forEach(m => map.removeLayer(m));
 
-    // Re-add every district marker EXCEPT the one the user clicked.
     baseDistrictMarkers.forEach(m => {
         if (m !== districtGroup.marker) m.addTo(map);
     });
 
-    // Reveal the location markers inside the selected district.
     districtGroup.locationGroups.forEach(lg => lg.marker.addTo(map));
 
-    // Highlight the selected district polygon (if we have geometry for it).
     clearSelectedDistrict();
     selectedDistrictGroup = districtGroup;
     if (districtGroup.feature) {
         selectedDistrictLayer = L.geoJSON(districtGroup.feature, {
             pane: "districtPane",
-            style: {
-                color: "#00ffff", weight: 2.5, opacity: 1,
-                fillColor: "#ff9800", fillOpacity: 0.2
-            }
+            style: { color: "#00ffff", weight: 2.5, opacity: 1, fillColor: "#ff9800", fillOpacity: 0.2 }
         }).addTo(map);
     }
 
@@ -332,7 +462,6 @@ function showLocationMarkersForDistrict(districtGroup) {
             L.latLngBounds([districtGroup.locationGroups[0].lat, districtGroup.locationGroups[0].lon])
         );
         let targetBounds = locationBounds.isValid() ? locationBounds : districtGroup.bounds;
-        // For a single-location district, add a small buffer so fitBounds doesn't over-zoom.
         const ne = targetBounds.getNorthEast();
         const sw = targetBounds.getSouthWest();
         if (ne.lat === sw.lat && ne.lng === sw.lng) {
@@ -369,15 +498,9 @@ fetch("geoindia_district.json")
 fetch("geoindia.geojson")
     .then(r => r.json())
     .then(data => {
-        function defaultStyle() {
-            return { color: "#ffffff", weight: 1.5, opacity: 1, fillColor: "#666666", fillOpacity: 0.35 };
-        }
-        function hoverStyle() {
-            return { color: "#ffffff", weight: 2, fillColor: "#ff5722", fillOpacity: 0.6 };
-        }
-        function selectedStyle() {
-            return { color: "#00ffff", weight: 3, opacity: 1, fillColor: "#ff9800", fillOpacity: 0.6 };
-        }
+        function defaultStyle() { return { color: "#ffffff", weight: 1.5, opacity: 1, fillColor: "#666666", fillOpacity: 0.35 }; }
+        function hoverStyle()   { return { color: "#ffffff", weight: 2, fillColor: "#ff5722", fillOpacity: 0.6 }; }
+        function selectedStyle(){ return { color: "#00ffff", weight: 3, opacity: 1, fillColor: "#ff9800", fillOpacity: 0.6 }; }
         function resetStates() {
             statesLayer.eachLayer(layer => {
                 layer.selected = false;
@@ -398,15 +521,9 @@ fetch("geoindia.geojson")
 
                 layer.bindTooltip(stateName, { sticky: false, direction: "top", className: "state-tooltip" });
 
-                layer.on("mouseover", e => {
-                    if (!layer.selected) { layer.openTooltip(e.latlng); layer.setStyle(hoverStyle()); }
-                });
-                layer.on("mousemove", e => {
-                    if (!layer.selected) layer.getTooltip().setLatLng(e.latlng);
-                });
-                layer.on("mouseout", () => {
-                    if (!layer.selected) { layer.closeTooltip(); layer.setStyle(defaultStyle()); }
-                });
+                layer.on("mouseover", e => { if (!layer.selected) { layer.openTooltip(e.latlng); layer.setStyle(hoverStyle()); } });
+                layer.on("mousemove", e => { if (!layer.selected) layer.getTooltip().setLatLng(e.latlng); });
+                layer.on("mouseout",  () => { if (!layer.selected) { layer.closeTooltip(); layer.setStyle(defaultStyle()); } });
                 layer.on("click", () => {
                     resetStates();
                     layer.selected = true;
@@ -434,7 +551,7 @@ fetch("instruments.json")
         const searchInput = document.getElementById("searchInput");
         const instrumentFilter = document.getElementById("instrumentFilter");
         const locationFilter = document.getElementById("locationFilter");
-        const categoryFilter = document.getElementById("categoryFilter");
+        const networkFilter = document.getElementById("networkFilter");
         const resetFilters = document.getElementById("resetFilters");
 
         let allData = normalizeInstrumentData(data);
@@ -444,7 +561,7 @@ fetch("instruments.json")
             return {
                 instrument: instrumentFilter.value,
                 location: locationFilter.value,
-                category: categoryFilter.value
+                network: networkFilter.value
             };
         }
 
@@ -456,18 +573,28 @@ fetch("instruments.json")
             return (
                 (excludedFilter === "instrument" || !selections.instrument || item.instrument_name === selections.instrument) &&
                 (excludedFilter === "location" || !selections.location || item.location_name === selections.location) &&
-                (excludedFilter === "category" || !selections.category || item.category === selections.category)
+                (excludedFilter === "network" || !selections.network || item.network === selections.network)
             );
         }
 
+        function matchesProjectTree(item) {
+            const matcher = getActiveProjectMatcher();
+            return !matcher || matcher(item);
+        }
+
         function getFilteredData(selections) {
-            return allData.filter(item => matchesSearch(item) && matchesSelectedFilters(item, selections));
+            return allData.filter(item =>
+                matchesSearch(item) &&
+                matchesSelectedFilters(item, selections) &&
+                matchesProjectTree(item)
+            );
         }
 
         function hasActiveFilters(selections = getFilterSelections()) {
             return Boolean(
                 searchInput.value.trim() || selections.instrument ||
-                selections.location || selections.category
+                selections.location || selections.network ||
+                selectedProjectNodeId
             );
         }
 
@@ -488,8 +615,8 @@ fetch("instruments.json")
 
         function populateFilters(selections = getFilterSelections()) {
             const filterConfigs = [
-                { key: "category", select: categoryFilter, field: "category", allLabel: "All Categories" },
-                { key: "instrument", select: instrumentFilter, field: "instrument_name", allLabel: "All Instruments" },
+                { key: "network", select: networkFilter, field: "network", allLabel: "All Networks" },
+                { key: "instrument", select: instrumentFilter, field: "instrument_name", allLabel: "All Sensors" },
                 { key: "location", select: locationFilter, field: "location_name", allLabel: "All Locations" }
             ];
 
@@ -498,7 +625,7 @@ fetch("instruments.json")
             filterConfigs.forEach(config => {
                 const values = [...new Set(
                     allData
-                        .filter(item => matchesSearch(item) && matchesSelectedFilters(item, selections, config.key))
+                        .filter(item => matchesSearch(item) && matchesProjectTree(item) && matchesSelectedFilters(item, selections, config.key))
                         .map(item => item[config.field])
                         .filter(item => item && item.trim() !== "")
                 )];
@@ -585,9 +712,8 @@ fetch("instruments.json")
                 });
             });
 
-            // Build district groups from visible location groups.
+            // District groups
             const districtGroups = new Map();
-
             currentLocationGroups.forEach(locationGroup => {
                 const districtFeature = getDistrictForPoint(locationGroup.lat, locationGroup.lon);
                 const districtName = districtFeature ? getDistrictName(districtFeature) : "Unknown District";
@@ -638,9 +764,7 @@ fetch("instruments.json")
                         className: "marker-label district-marker-label"
                     });
 
-                districtMarker.on("click", () => {
-                    showLocationMarkersForDistrict(districtGroup);
-                });
+                districtMarker.on("click", () => { showLocationMarkersForDistrict(districtGroup); });
 
                 districtGroup.marker = districtMarker;
                 allDistrictMarkers.push(districtMarker);
@@ -654,23 +778,139 @@ fetch("instruments.json")
             let selections = getFilterSelections();
             while (populateFilters(selections)) selections = getFilterSelections();
             renderData(getFilteredData(selections), hasActiveFilters(selections));
+            renderProjectTree(); // refresh counts
         }
+
+        // ========================================
+        // PROJECT TREE RENDERING
+        // ========================================
+
+        function countForNode(node) {
+            return allData.filter(node.match).length;
+        }
+
+        function renderProjectTree() {
+            projectsTreeEl.innerHTML = "";
+
+            function renderNodes(nodes, container, depth) {
+                nodes.forEach(node => {
+                    const li = document.createElement("li");
+                    li.className = "tree-item";
+                    const expanded = expandedProjectNodeIds.has(node.id);
+                    if (!node.isLeaf && !expanded) li.classList.add("collapsed");
+
+                    const row = document.createElement("div");
+                    row.className = "tree-row";
+                    if (depth === 0) row.classList.add("is-root");
+                    if (selectedProjectNodeId === node.id) row.classList.add("selected");
+
+                    const count = countForNode(node);
+                    if (count === 0) row.classList.add("empty");
+
+                    const toggle = document.createElement("span");
+                    toggle.className = "tree-toggle";
+                    if (node.isLeaf) toggle.classList.add("is-leaf");
+                    toggle.textContent = "▾";
+
+                    const label = document.createElement("span");
+                    label.className = "tree-label";
+                    label.textContent = node.label;
+
+                    const countEl = document.createElement("span");
+                    countEl.className = "tree-count";
+                    countEl.textContent = String(count);
+
+                    row.appendChild(toggle);
+                    row.appendChild(label);
+                    row.appendChild(countEl);
+
+                    // Toggle expand/collapse on the chevron only
+                    toggle.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        if (node.isLeaf) return;
+                        if (expandedProjectNodeIds.has(node.id)) {
+                            expandedProjectNodeIds.delete(node.id);
+                            li.classList.add("collapsed");
+                        } else {
+                            expandedProjectNodeIds.add(node.id);
+                            li.classList.remove("collapsed");
+                        }
+                    });
+
+                    // Whole row toggles selection (no-op for empty branches)
+                    row.addEventListener("click", () => {
+                        if (count === 0) return;
+                        if (selectedProjectNodeId === node.id) {
+                            selectedProjectNodeId = null;
+                        } else {
+                            selectedProjectNodeId = node.id;
+                            // auto-expand ancestor path so the selected node stays visible
+                            let cur = node.parent;
+                            while (cur) { expandedProjectNodeIds.add(cur.id); cur = cur.parent; }
+                        }
+                        applyFilters();
+                        fitMapToFilteredMarkers();
+                    });
+
+                    li.appendChild(row);
+
+                    if (!node.isLeaf) {
+                        const ul = document.createElement("ul");
+                        renderNodes(node.children, ul, depth + 1);
+                        li.appendChild(ul);
+                    }
+
+                    container.appendChild(li);
+                });
+            }
+
+
+            renderNodes(projectTreeConfig, projectsTreeEl, 0);
+
+            if (selectedProjectNodeId) {
+                const node = projectNodeById.get(selectedProjectNodeId);
+                projectSelectedLabelEl.hidden = false;
+                projectSelectedLabelEl.innerHTML = `<b>Selected:</b> ${escapeHTML(projectPathLabel(node))}`;
+                clearProjectBtn.hidden = false;
+            } else {
+                projectSelectedLabelEl.hidden = true;
+                clearProjectBtn.hidden = true;
+            }
+        }
+
+        function fitMapToFilteredMarkers() {
+            if (!currentLocationGroups.length) return;
+            const bounds = L.latLngBounds(currentLocationGroups.map(lg => [lg.lat, lg.lon]));
+            if (bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [60, 60], maxZoom: 10, animate: true });
+            }
+        }
+
+        clearProjectBtn.addEventListener("click", () => {
+            selectedProjectNodeId = null;
+            applyFilters();
+            map.fitBounds(indiaBounds);
+        });
 
         searchInput.addEventListener("input", applyFilters);
         instrumentFilter.addEventListener("change", applyFilters);
         locationFilter.addEventListener("change", applyFilters);
-        categoryFilter.addEventListener("change", applyFilters);
+        networkFilter.addEventListener("change", applyFilters);
         window.refreshInstrumentMarkers = applyFilters;
 
         resetFilters.addEventListener("click", () => {
             searchInput.value = "";
             instrumentFilter.value = "";
             locationFilter.value = "";
-            categoryFilter.value = "";
+            networkFilter.value = "";
+            selectedProjectNodeId = null;
             populateFilters();
             renderData(allData);
+            renderProjectTree();
+            map.fitBounds(indiaBounds);
         });
 
+        renderProjectTree();
         populateFilters();
         renderData(allData);
     });
@@ -707,11 +947,20 @@ map.on("dblclick", function() {
         statesLayer.eachLayer(layer => {
             layer.selected = false;
             layer.closeTooltip();
-            layer.setStyle({
-                color: "#ffffff", weight: 1.5,
-                fillColor: "#666666", fillOpacity: 0.35
-            });
+            layer.setStyle({ color: "#ffffff", weight: 1.5, fillColor: "#666666", fillOpacity: 0.35 });
         });
     }
     showDistrictMarkers();
+});
+
+// Tip toggle
+document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("tipToggle");
+    const content = document.getElementById("tipContent");
+    if (!btn || !content) return;
+    btn.addEventListener("click", () => {
+        const open = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", String(!open));
+        content.hidden = open;
+    });
 });
