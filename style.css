@@ -760,7 +760,14 @@ header{
   box-shadow:0 6px 20px rgba(0,0,0,.30), inset 0 0 0 2px rgba(255,255,255,.6);
 }
 /* keep logo contained on every size (was overflowing at 165%) */
-.brand-mark img{ width:100% !important; height:100% !important; object-fit:contain; padding:6px; }
+.brand-mark img{
+    width:100% !important;
+    height:100% !important;
+    object-fit:contain;
+    padding:0;
+    transform: scale(3);
+    transform-origin:center;
+}
 .institute-title h1{ letter-spacing:.2px; text-shadow:0 1px 2px rgba(0,0,0,.25); }
 .portal-title h2{ letter-spacing:.3px; }
 
