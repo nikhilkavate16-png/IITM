@@ -99,6 +99,48 @@ header {
     text-align: center;
 }
 
+.network-toggle {
+    margin: 10px 12px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid #d6e0ec;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.network-toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #003366;
+    cursor: pointer;
+    user-select: none;
+}
+.network-toggle-label input { position: absolute; opacity: 0; pointer-events: none; }
+.network-toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background: #c9d3df;
+    border-radius: 999px;
+    transition: background 0.2s;
+    flex: 0 0 auto;
+}
+.network-toggle-switch::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+.network-toggle-label input:checked ~ .network-toggle-switch { background: #f5a623; }
+.network-toggle-label input:checked ~ .network-toggle-switch::after { transform: translateX(16px); }
+
 .footer-contact { margin-top: 3px; color: #d9ecff; }
 
 .sidebar {
@@ -234,24 +276,31 @@ header {
 
 .sidebar-hint p { margin: 0; }
 
+.sidebar-hint:has(.tip-toggle) {
+    padding: 6px 10px;
+    border-left-width: 3px;
+    border-radius: 6px;
+    font-size: 12px;
+}
 .tip-toggle {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    width: 100%;
+    gap: 6px;
+    width: auto;
     background: transparent;
     border: none;
     padding: 0;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #003366;
+    line-height: 1.2;
 }
-.tip-toggle .tip-icon { font-size: 18px; line-height: 1; }
-.tip-toggle .tip-label { flex: 1; text-align: left; }
-.tip-toggle .tip-caret { transition: transform 0.2s ease; font-size: 12px; }
+.tip-toggle .tip-icon { font-size: 13px; line-height: 1; }
+.tip-toggle .tip-label { text-align: left; }
+.tip-toggle .tip-caret { transition: transform 0.2s ease; font-size: 10px; }
 .tip-toggle[aria-expanded="true"] .tip-caret { transform: rotate(90deg); }
-.tip-content { margin: 10px 0 0 !important; }
+.tip-content { margin: 6px 0 0 !important; font-size: 12px; line-height: 1.4; }
 
 /* ============== Projects button + tree ============== */
 
