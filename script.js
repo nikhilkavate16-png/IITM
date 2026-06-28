@@ -730,9 +730,12 @@ fetch("instruments.json")
                 allMarkers.push(marker);
 
                 marker.on("click", () => {
+                    if (window.__markInfoPanelInteraction) window.__markInfoPanelInteraction();
                     locationGroup.selectedInstrumentId = "";
                     marker.setPopupContent(buildLocationPopup(locationGroup, locationIndex));
+                    if (window.updateInfoPanel) window.updateInfoPanel({ type: "location", data: locationGroup });
                 });
+
             });
 
             // District groups
@@ -787,7 +790,12 @@ fetch("instruments.json")
                         className: "marker-label district-marker-label"
                     });
 
-                districtMarker.on("click", () => { showLocationMarkersForDistrict(districtGroup); });
+                districtMarker.on("click", () => {
+                    if (window.__markInfoPanelInteraction) window.__markInfoPanelInteraction();
+                    showLocationMarkersForDistrict(districtGroup);
+                    if (window.updateInfoPanel) window.updateInfoPanel({ type: "district", data: districtGroup });
+                });
+
 
                 districtGroup.marker = districtMarker;
                 allDistrictMarkers.push(districtMarker);
@@ -873,7 +881,24 @@ fetch("instruments.json")
                         }
                         applyFilters();
                         fitMapToFilteredMarkers();
+                        if (window.updateInfoPanel) {
+                            if (selectedProjectNodeId) {
+                                window.updateInfoPanel({
+                                    type: "project",
+                                    data: {
+                                        label: node.label,
+                                        pathLabel: projectPathLabel(node),
+                                        instruments: allData.filter(node.match),
+                                        locationGroups: currentLocationGroups,
+                                        districtGroups: currentDistrictGroups
+                                    }
+                                });
+                            } else {
+                                window.updateInfoPanel({ type: "clear" });
+                            }
+                        }
                     });
+
 
                     li.appendChild(row);
 
@@ -913,6 +938,7 @@ fetch("instruments.json")
             selectedProjectNodeId = null;
             applyFilters();
             map.fitBounds(indiaBounds);
+            if (window.closeInfoPanel) window.closeInfoPanel();
         });
 
         searchInput.addEventListener("input", applyFilters);
@@ -931,7 +957,9 @@ fetch("instruments.json")
             renderData(allData);
             renderProjectTree();
             map.fitBounds(indiaBounds);
+            if (window.closeInfoPanel) window.closeInfoPanel();
         });
+
 
         renderProjectTree();
         populateFilters();
@@ -974,6 +1002,8 @@ map.on("dblclick", function() {
         });
     }
     showDistrictMarkers();
+    if (window.closeInfoPanel) window.closeInfoPanel();
+
 });
 
 // Tip toggle
@@ -987,3 +1017,159 @@ document.addEventListener("DOMContentLoaded", () => {
         content.hidden = open;
     });
 });
+// ========================================
+// SCALE BAR (km, zoom-aware like Google Maps)
+// ========================================
+L.control.scale({
+    position: "bottomleft",
+    metric: true,
+    imperial: false,
+    maxWidth: 160,
+    updateWhenIdle: false
+}).addTo(map);
+
+// ========================================
+// DYNAMIC INFO PANEL (bottom-right)
+// ========================================
+(function () {
+    const panel = document.createElement("div");
+    panel.className = "map-info-panel collapsed";
+    panel.setAttribute("aria-live", "polite");
+    panel.innerHTML = `
+        <div class="map-info-panel-head">
+            <span class="map-info-panel-title">📍 Selection Info</span>
+            <button type="button" class="map-info-panel-close" aria-label="Close info panel">×</button>
+        </div>
+        <div class="map-info-panel-body">
+            <p class="map-info-panel-empty">Click a marker on the map to view details here.</p>
+        </div>`;
+    const mapEl = document.getElementById("map");
+    if (mapEl && mapEl.parentElement) mapEl.parentElement.appendChild(panel);
+
+    const bodyEl = panel.querySelector(".map-info-panel-body");
+    const titleEl = panel.querySelector(".map-info-panel-title");
+
+    function closePanel() {
+        panel.classList.add("collapsed");
+        titleEl.textContent = "📍 Selection Info";
+        bodyEl.innerHTML = `<p class="map-info-panel-empty">Click a marker on the map to view details here.</p>`;
+    }
+    panel.querySelector(".map-info-panel-close").addEventListener("click", closePanel);
+    window.closeInfoPanel = closePanel;
+
+    L.DomEvent.disableClickPropagation(panel);
+    L.DomEvent.disableScrollPropagation(panel);
+
+    // Close on empty-map click (ignore clicks bubbling from markers)
+    let lastMarkerClickAt = 0;
+    window.__markInfoPanelInteraction = () => { lastMarkerClickAt = Date.now(); };
+    map.on("click", () => {
+        if (Date.now() - lastMarkerClickAt < 300) return;
+        closePanel();
+    });
+
+    function esc(s) {
+        return String(s == null ? "" : s)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    function val(s, fallback) {
+        const v = (s == null ? "" : String(s)).trim();
+        return v ? v : (fallback || "—");
+    }
+
+    window.updateInfoPanel = function (payload) {
+        if (!payload || payload.type === "clear") { closePanel(); return; }
+        if (!payload.data) return;
+        panel.classList.remove("collapsed");
+        window.__markInfoPanelInteraction();
+
+        if (payload.type === "district") {
+            const d = payload.data;
+            const locCount = (d.locationGroups || []).length;
+            const instCount = (d.locationGroups || []).reduce(
+                (acc, lg) => acc + (lg.instruments ? lg.instruments.length : 0), 0
+            );
+            const networks = new Set();
+            const projects = new Set();
+            (d.locationGroups || []).forEach(lg => (lg.instruments || []).forEach(i => {
+                if (i.network) networks.add(i.network.trim());
+                if (i.project) projects.add(i.project.trim());
+            }));
+            titleEl.textContent = "🏙 District";
+            const topLocs = (d.locationGroups || []).slice(0, 6).map(lg =>
+                `<li><span class="info-loc-name">${esc(val(lg.locationName, "Location"))}</span>
+                 <span class="info-loc-meta">${(lg.instruments || []).length} instr.</span></li>`
+            ).join("");
+            bodyEl.innerHTML = `
+                <h4>${esc(val(d.districtName, "District"))}</h4>
+                ${d.stateName ? `<p class="info-sub">🗺 ${esc(d.stateName)}</p>` : ""}
+                <div class="info-stats">
+                    <div><strong>${locCount}</strong><span>Locations</span></div>
+                    <div><strong>${instCount}</strong><span>Instruments</span></div>
+                    <div><strong>${networks.size}</strong><span>Networks</span></div>
+                </div>
+                ${projects.size ? `<p class="info-section-label">Projects</p><p class="info-sub">${esc([...projects].slice(0,4).join(", "))}${projects.size>4?` +${projects.size-4}`:""}</p>` : ""}
+                ${topLocs ? `<p class="info-section-label">Locations</p><ul class="info-loc-list">${topLocs}</ul>` : ""}
+                ${locCount > 6 ? `<p class="info-more">+${locCount - 6} more — click a marker to drill in</p>` : ""}
+            `;
+        } else if (payload.type === "location") {
+            const lg = payload.data;
+            const insts = lg.instruments || [];
+            const dg = lg.districtGroup || {};
+            titleEl.textContent = "📡 Location";
+            const networks = [...new Set(insts.map(i => (i.network || "").trim()).filter(Boolean))];
+            const projects = [...new Set(insts.map(i => (i.project || "").trim()).filter(Boolean))];
+            const items = insts.slice(0, 8).map(i => `
+                <li>
+                    <span class="info-inst-name">${esc(val(i.instrument_name, "Unnamed instrument"))}</span>
+                    ${i.sensor_type ? `<span class="info-chip">${esc(i.sensor_type)}</span>` : ""}
+                    ${i.measurement ? `<span class="info-chip alt">${esc(i.measurement)}</span>` : ""}
+                </li>`).join("");
+            const placeBits = [];
+            if (dg.districtName) placeBits.push(esc(dg.districtName));
+            if (dg.stateName) placeBits.push(esc(dg.stateName));
+            bodyEl.innerHTML = `
+                <h4>${esc(val(lg.locationName, "Location"))}</h4>
+                ${placeBits.length ? `<p class="info-sub">🗺 ${placeBits.join(", ")}</p>` : ""}
+                <p class="info-sub">📍 ${esc(lg.lat.toFixed(4))}°N, ${esc(lg.lon.toFixed(4))}°E</p>
+                <div class="info-stats">
+                    <div><strong>${insts.length}</strong><span>Instruments</span></div>
+                    <div><strong>${networks.length}</strong><span>Networks</span></div>
+                    <div><strong>${projects.length}</strong><span>Projects</span></div>
+                </div>
+                ${networks.length ? `<p class="info-section-label">Networks</p><p class="info-sub">${esc(networks.slice(0,4).join(", "))}${networks.length>4?` +${networks.length-4}`:""}</p>` : ""}
+                ${items ? `<p class="info-section-label">Instruments</p><ul class="info-inst-list">${items}</ul>` : ""}
+                ${insts.length > 8 ? `<p class="info-more">+${insts.length - 8} more — open popup for full list</p>` : ""}
+            `;
+        } else if (payload.type === "project") {
+            const p = payload.data;
+            const insts = p.instruments || [];
+            const locs = p.locationGroups || [];
+            const districts = p.districtGroups || [];
+            const states = new Set(districts.map(d => d.stateName).filter(Boolean));
+            const networks = [...new Set(insts.map(i => (i.network || "").trim()).filter(Boolean))];
+            const sensors = [...new Set(insts.map(i => (i.sensor_type || "").trim()).filter(Boolean))];
+            titleEl.textContent = "🗂 Project";
+            const topStates = [...states].slice(0, 6).map(s => `<li><span class="info-loc-name">${esc(s)}</span></li>`).join("");
+            const topLocs = locs.slice(0, 6).map(lg => {
+                const place = lg.districtGroup ? ` <span class="info-loc-meta">${esc(lg.districtGroup.stateName || lg.districtGroup.districtName || "")}</span>` : "";
+                return `<li><span class="info-loc-name">${esc(val(lg.locationName, "Location"))}</span>${place}</li>`;
+            }).join("");
+            bodyEl.innerHTML = `
+                <h4>${esc(val(p.label, "Project"))}</h4>
+                ${p.pathLabel && p.pathLabel !== p.label ? `<p class="info-sub">${esc(p.pathLabel)}</p>` : ""}
+                <div class="info-stats">
+                    <div><strong>${insts.length}</strong><span>Instruments</span></div>
+                    <div><strong>${locs.length}</strong><span>Locations</span></div>
+                    <div><strong>${states.size}</strong><span>States</span></div>
+                </div>
+                ${networks.length ? `<p class="info-section-label">Networks</p><p class="info-sub">${esc(networks.slice(0,5).join(", "))}${networks.length>5?` +${networks.length-5}`:""}</p>` : ""}
+                ${sensors.length ? `<p class="info-section-label">Sensor Types</p><p class="info-sub">${esc(sensors.slice(0,5).join(", "))}${sensors.length>5?` +${sensors.length-5}`:""}</p>` : ""}
+                ${topStates ? `<p class="info-section-label">States</p><ul class="info-loc-list">${topStates}</ul>` : ""}
+                ${topLocs ? `<p class="info-section-label">Top Locations</p><ul class="info-loc-list">${topLocs}</ul>` : ""}
+            `;
+        }
+    };
+})();
+
