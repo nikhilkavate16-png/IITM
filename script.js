@@ -295,22 +295,27 @@ function buildLocationPopup(locationGroup, index) {
     const selectedParam = selectedInstrument
         ? `, ${escapeHTML(JSON.stringify(String(selectedInstrument.id)))}`
         : "";
-    const allButtonLabel = locationGroup.hasActiveFilters ? "View All Sensors" : "View Instruments";
 
+    // Primary: always show all instruments at this location
     let popupButtons = `
         <button type="button" class="popup-view-btn" onclick="openInstrumentTable(${index})">
-            ${allButtonLabel}
+            View Instruments
         </button>`;
 
+    // Secondary: when filters are active, show only the filtered subset
+    if (locationGroup.hasActiveFilters) {
+        popupButtons += `
+            <button type="button" class="popup-view-btn popup-secondary-btn" onclick="openInstrumentTable(${index}, '', true)">
+                Filtered Instruments
+            </button>`;
+    }
+
+    // Tertiary: when a specific instrument is selected, jump straight to it
     if (selectedInstrument) {
-        popupButtons = locationGroup.hasActiveFilters
-            ? `${popupButtons}
-                <button type="button" class="popup-view-btn popup-secondary-btn" onclick="openInstrumentTable(${index}${selectedParam})">
-                    View Selected Instrument
-                </button>`
-            : `<button type="button" class="popup-view-btn" onclick="openInstrumentTable(${index}${selectedParam})">
-                    View Instrument
-                </button>`;
+        popupButtons += `
+            <button type="button" class="popup-view-btn popup-secondary-btn" onclick="openInstrumentTable(${index}${selectedParam})">
+                View Selected Instrument
+            </button>`;
     }
 
     return `
@@ -324,17 +329,22 @@ function buildLocationPopup(locationGroup, index) {
         </div>`;
 }
 
-function openInstrumentTable(index, selectedInstrumentId = "") {
+function openInstrumentTable(index, selectedInstrumentId = "", filteredOnly = false) {
     const locationGroup = currentLocationGroups[index];
     if (!locationGroup) return;
 
-    const tableSource = locationGroup.allInstruments || locationGroup.instruments;
+    // Default table source = all instruments at this location.
+    // When `filteredOnly` is true, use only the currently filtered subset.
+    const tableSource = filteredOnly
+        ? locationGroup.instruments
+        : (locationGroup.allInstruments || locationGroup.instruments);
     const tableInstruments = selectedInstrumentId
         ? tableSource.filter(i => String(i.id) === String(selectedInstrumentId))
         : tableSource;
 
+    const titleSuffix = filteredOnly ? " — Filtered" : "";
     document.getElementById("instrumentTableTitle").innerText =
-        displayValue(locationGroup.locationName, "Location");
+        displayValue(locationGroup.locationName, "Location") + titleSuffix;
     document.getElementById("instrumentTableMeta").innerText =
         "Latitude: " + locationGroup.lat.toFixed(6) +
         " | Longitude: " + locationGroup.lon.toFixed(6) +
@@ -586,8 +596,21 @@ fetch("instruments.json")
             return allData.filter(item =>
                 matchesSearch(item) &&
                 matchesSelectedFilters(item, selections) &&
-                matchesProjectTree(item)
+                matchesProjectTree(item) &&
+                matchesLightningToggle(item)
             );
+        }
+
+        const LIGHTNING_NETWORK_NAME = "Indain Lightning Location Network";
+        const lightningToggle = document.getElementById("lightningToggle");
+
+        function matchesLightningToggle(item) {
+            if (lightningToggle && lightningToggle.checked) return true;
+            return (item.network || "").trim() !== LIGHTNING_NETWORK_NAME;
+        }
+
+        if (lightningToggle) {
+            lightningToggle.addEventListener("change", () => applyFilters());
         }
 
         function hasActiveFilters(selections = getFilterSelections()) {
