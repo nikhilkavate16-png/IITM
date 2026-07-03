@@ -98,6 +98,44 @@ projectsBtn.addEventListener("click", () => {
     projectsPanel.setAttribute("aria-hidden", String(!isOpen));
 });
 
+const instrumentsBtn = document.getElementById("instrumentsBtn");
+const instrumentsPanel = document.getElementById("instrumentsPanel");
+const instrumentsListEl = document.getElementById("instrumentsList");
+const clearInstrumentSelectionBtn = document.getElementById("clearInstrumentSelection");
+const instrumentSelectedLabelEl = document.getElementById("instrumentSelectedLabel");
+
+instrumentsBtn.addEventListener("click", () => {
+    const isOpen = instrumentsPanel.classList.toggle("show");
+    instrumentsBtn.setAttribute("aria-expanded", String(isOpen));
+    instrumentsPanel.setAttribute("aria-hidden", String(!isOpen));
+});
+
+const locationsBtn = document.getElementById("locationsBtn");
+const locationsPanel = document.getElementById("locationsPanel");
+const locationsListEl = document.getElementById("locationsList");
+const clearLocationSelectionBtn = document.getElementById("clearLocationSelection");
+const locationSelectedLabelEl = document.getElementById("locationSelectedLabel");
+const locationsSearchEl = document.getElementById("locationsSearch");
+let locationsSearchQuery = "";
+
+if (locationsSearchEl) {
+    locationsSearchEl.addEventListener("input", (e) => {
+        locationsSearchQuery = e.target.value.trim().toLowerCase();
+        if (typeof window.renderLocationsList === "function") {
+            window.renderLocationsList();
+        }
+    });
+}
+
+if (locationsBtn) {
+    locationsBtn.addEventListener("click", () => {
+        const isOpen = locationsPanel.classList.toggle("show");
+        locationsBtn.setAttribute("aria-expanded", String(isOpen));
+        locationsPanel.setAttribute("aria-hidden", String(!isOpen));
+    });
+}
+
+
 if (window.matchMedia("(max-width: 900px)").matches) {
     setSidebarCollapsed(true);
 }
@@ -592,34 +630,52 @@ fetch("instruments.json")
             return !matcher || matcher(item);
         }
 
+        const selectedLocationSet = new Set();
+
+        function matchesSelectedLocationSet(item) {
+            if (selectedLocationSet.size === 0) return true;
+            return selectedLocationSet.has(item.location_name);
+        }
+
         function getFilteredData(selections) {
             return allData.filter(item =>
                 matchesSearch(item) &&
                 matchesSelectedFilters(item, selections) &&
+                matchesSelectedLocationSet(item) &&
                 matchesProjectTree(item) &&
-                matchesLightningToggle(item)
+                includeLightning(item)
             );
         }
+
 
         const LIGHTNING_NETWORK_NAME = "Indain Lightning Location Network";
         const lightningToggle = document.getElementById("lightningToggle");
 
-        function matchesLightningToggle(item) {
-            if (lightningToggle && lightningToggle.checked) return true;
-            return (item.network || "").trim() !== LIGHTNING_NETWORK_NAME;
+        function isLightningNetworkItem(item) {
+            const network = (item.network || "").trim();
+            if (!network) return false;
+            const lower = network.toLowerCase();
+            return lower === LIGHTNING_NETWORK_NAME.toLowerCase() ||
+                   lower.includes("lightning location network");
+        }
+
+        function includeLightning(item) {
+            return !isLightningNetworkItem(item) || (lightningToggle && lightningToggle.checked);
         }
 
         if (lightningToggle) {
             lightningToggle.addEventListener("change", () => applyFilters());
         }
 
+
         function hasActiveFilters(selections = getFilterSelections()) {
             return Boolean(
                 searchInput.value.trim() || selections.instrument ||
                 selections.location || selections.network ||
-                selectedProjectNodeId
+                selectedProjectNodeId || selectedLocationSet.size > 0
             );
         }
+
 
         function setSelectOptions(select, allLabel, values, currentValue) {
             select.innerHTML = "";
@@ -648,10 +704,11 @@ fetch("instruments.json")
             filterConfigs.forEach(config => {
                 const values = [...new Set(
                     allData
-                        .filter(item => matchesSearch(item) && matchesProjectTree(item) && matchesSelectedFilters(item, selections, config.key))
+                        .filter(item => includeLightning(item) && matchesSearch(item) && matchesProjectTree(item) && matchesSelectedFilters(item, selections, config.key))
                         .map(item => item[config.field])
                         .filter(item => item && item.trim() !== "")
                 )];
+
 
                 setSelectOptions(config.select, config.allLabel, values, selections[config.key]);
 
@@ -810,6 +867,126 @@ fetch("instruments.json")
             while (populateFilters(selections)) selections = getFilterSelections();
             renderData(getFilteredData(selections), hasActiveFilters(selections));
             renderProjectTree(); // refresh counts
+            renderInstrumentsList();
+            renderLocationsList();
+        }
+
+        // ========================================
+        // LOCATIONS LIST (sidebar panel)
+        // ========================================
+        function renderLocationsList() {
+            if (!locationsListEl) return;
+            const baseData = allData.filter(includeLightning);
+            const allNames = [...new Set(
+                baseData.map(item => item.location_name).filter(n => n && n.trim() !== "")
+            )].sort((a, b) => a.localeCompare(b));
+
+            // Drop any stale selections no longer present in data
+            for (const n of Array.from(selectedLocationSet)) {
+                if (!allNames.includes(n)) selectedLocationSet.delete(n);
+            }
+
+            const q = locationsSearchQuery || "";
+            const names = q
+                ? allNames.filter(n => n.toLowerCase().includes(q))
+                : allNames;
+
+            locationsListEl.innerHTML = "";
+            if (names.length === 0) {
+                const empty = document.createElement("li");
+                empty.className = "tree-empty";
+                empty.textContent = q ? `No locations match "${q}"` : "No locations available";
+                locationsListEl.appendChild(empty);
+            }
+            names.forEach(name => {
+                const count = baseData.filter(i => i.location_name === name).length;
+                const isSelected = selectedLocationSet.has(name);
+                const li = document.createElement("li");
+                li.className = "tree-item";
+                const row = document.createElement("div");
+                row.className = "tree-row" + (isSelected ? " selected" : "");
+                row.setAttribute("role", "option");
+                row.setAttribute("aria-selected", String(isSelected));
+                row.innerHTML = `
+                    <input type="checkbox" class="tree-check" ${isSelected ? "checked" : ""} tabindex="-1" aria-hidden="true" style="margin-right:8px;pointer-events:none;">
+                    <span class="tree-label">${escapeHTML(name)}</span>
+                    <span class="tree-count">${count}</span>`;
+                row.addEventListener("click", () => {
+                    if (selectedLocationSet.has(name)) selectedLocationSet.delete(name);
+                    else selectedLocationSet.add(name);
+                    applyFilters();
+                });
+                li.appendChild(row);
+                locationsListEl.appendChild(li);
+            });
+
+            if (selectedLocationSet.size > 0) {
+                locationSelectedLabelEl.hidden = false;
+                const list = Array.from(selectedLocationSet);
+                const preview = list.slice(0, 3).join(", ") + (list.length > 3 ? ` +${list.length - 3} more` : "");
+                locationSelectedLabelEl.textContent = `Selected (${list.length}): ${preview}`;
+                clearLocationSelectionBtn.hidden = false;
+            } else {
+                locationSelectedLabelEl.hidden = true;
+                clearLocationSelectionBtn.hidden = true;
+            }
+        }
+        // Expose so the module-scope search input can trigger a re-render.
+        window.renderLocationsList = renderLocationsList;
+
+        if (clearLocationSelectionBtn) {
+            clearLocationSelectionBtn.addEventListener("click", () => {
+                selectedLocationSet.clear();
+                applyFilters();
+            });
+        }
+
+
+
+        // ========================================
+        // INSTRUMENTS LIST (sidebar panel)
+        // ========================================
+        function renderInstrumentsList() {
+            if (!instrumentsListEl) return;
+            const current = instrumentFilter.value;
+            const baseData = allData.filter(includeLightning);
+            const names = [...new Set(
+                baseData.map(item => item.instrument_name).filter(n => n && n.trim() !== "")
+            )].sort((a, b) => a.localeCompare(b));
+
+            instrumentsListEl.innerHTML = "";
+            names.forEach(name => {
+                const count = baseData.filter(i => i.instrument_name === name).length;
+
+                const li = document.createElement("li");
+                li.className = "tree-item";
+                const row = document.createElement("div");
+                row.className = "tree-row" + (current === name ? " selected" : "");
+                row.setAttribute("role", "option");
+                row.innerHTML = `<span class="tree-label">${escapeHTML(name)}</span><span class="tree-count">${count}</span>`;
+                row.addEventListener("click", () => {
+                    instrumentFilter.value = (current === name) ? "" : name;
+                    applyFilters();
+                });
+                li.appendChild(row);
+                instrumentsListEl.appendChild(li);
+            });
+
+            if (current) {
+                instrumentSelectedLabelEl.hidden = false;
+                instrumentSelectedLabelEl.textContent = `Selected: ${current}`;
+                clearInstrumentSelectionBtn.hidden = false;
+            } else {
+                instrumentSelectedLabelEl.hidden = true;
+                clearInstrumentSelectionBtn.hidden = true;
+            }
+        }
+
+        if (clearInstrumentSelectionBtn) {
+            clearInstrumentSelectionBtn.addEventListener("click", () => {
+                instrumentFilter.value = "";
+                applyFilters();
+            });
         }
 
         // ========================================
@@ -817,8 +994,9 @@ fetch("instruments.json")
         // ========================================
 
         function countForNode(node) {
-            return allData.filter(node.match).length;
+            return allData.filter(item => includeLightning(item) && node.match(item)).length;
         }
+
 
         function renderProjectTree() {
             projectsTreeEl.innerHTML = "";
@@ -888,7 +1066,7 @@ fetch("instruments.json")
                                     data: {
                                         label: node.label,
                                         pathLabel: projectPathLabel(node),
-                                        instruments: allData.filter(node.match),
+                                        instruments: allData.filter(item => includeLightning(item) && node.match(item)),
                                         locationGroups: currentLocationGroups,
                                         districtGroups: currentDistrictGroups
                                     }
@@ -953,9 +1131,14 @@ fetch("instruments.json")
             locationFilter.value = "";
             networkFilter.value = "";
             selectedProjectNodeId = null;
+            selectedLocationSet.clear();
+
             populateFilters();
             renderData(allData);
             renderProjectTree();
+            if (typeof renderInstrumentsList === "function") renderInstrumentsList();
+            if (typeof renderLocationsList === "function") renderLocationsList();
+
             map.fitBounds(indiaBounds);
             if (window.closeInfoPanel) window.closeInfoPanel();
         });
