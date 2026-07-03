@@ -7,7 +7,7 @@
     <meta name="description" content="Interactive map of IITM observation instruments across India.">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=20260628-3">
+    <link rel="stylesheet" href="style.css?v=20260702-2">
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet"
@@ -53,7 +53,10 @@
             </button>
 
             <div class="sidebar-head">
-                <h2>Instruments</h2>
+                <div class="sidebar-head-text">
+                    <h2>Instruments</h2>
+                    <p class="sidebar-sub">Explore India's observation network</p>
+                </div>
                 <span id="resultCount" class="result-count" title="Matching instruments">0</span>
             </div>
 
@@ -62,10 +65,25 @@
                    id="searchInput"
                    placeholder="🔍 Search instrument...">
 
-            <!-- Projects Button -->
-            <button id="projectsBtn" class="projects-btn" type="button" aria-expanded="false">
-                Projects
-            </button>
+            <!-- Indian Lightning Location Network Toggle (below search) -->
+            <div class="network-toggle">
+                <label class="network-toggle-label" for="lightningToggle">
+                    <span>⚡ Indian Lightning Location Network</span>
+                    <input type="checkbox" id="lightningToggle" />
+                    <span class="network-toggle-switch" aria-hidden="true"></span>
+                </label>
+            </div>
+
+            <!-- Nav pills -->
+            <div class="side-nav" role="tablist">
+              <button id="projectsBtn" class="side-nav-btn projects-btn" type="button" aria-expanded="false">
+                  <span class="side-nav-icon" aria-hidden="true">🗂️</span>
+                  <span class="side-nav-label">
+                      <span class="side-nav-title">Projects</span>
+                      <span class="side-nav-sub">Browse by project</span>
+                  </span>
+                  <span class="side-nav-caret" aria-hidden="true">›</span>
+              </button>
 
             <!-- Projects Tree Panel -->
             <div id="projectsPanel" class="projects-panel" aria-hidden="true">
@@ -77,43 +95,97 @@
                 <div id="projectSelectedLabel" class="project-selected-label" hidden></div>
             </div>
 
-            <!-- Filter Button -->
-            <button id="filterBtn" class="filter-btn">
-                ⚙ Filters
-            </button>
+              <button id="instrumentsBtn" class="side-nav-btn instruments-btn" type="button" aria-expanded="false">
+                  <span class="side-nav-icon" aria-hidden="true">🛰️</span>
+                  <span class="side-nav-label">
+                      <span class="side-nav-title">Instruments</span>
+                      <span class="side-nav-sub">Browse by instrument</span>
+                  </span>
+                  <span class="side-nav-caret" aria-hidden="true">›</span>
+              </button>
 
-            <!-- Indian Lightning Location Network Toggle -->
-            <div class="network-toggle">
-                <label class="network-toggle-label" for="lightningToggle">
-                    <span>⚡ Indain Lightning Location Network</span>
-                    <input type="checkbox" id="lightningToggle" />
-                    <span class="network-toggle-switch" aria-hidden="true"></span>
-                </label>
+            <!-- Instruments List Panel -->
+            <div id="instrumentsPanel" class="projects-panel" aria-hidden="true">
+                <div class="projects-panel-head">
+                    <span>Browse by Instrument</span>
+                    <button id="clearInstrumentSelection" type="button" class="clear-project-btn" hidden>Clear</button>
+                </div>
+                <ul id="instrumentsList" class="projects-tree" role="listbox"></ul>
+                <div id="instrumentSelectedLabel" class="project-selected-label" hidden></div>
+            </div>
+
+              <button id="locationsBtn" class="side-nav-btn locations-btn" type="button" aria-expanded="false">
+                  <span class="side-nav-icon" aria-hidden="true">📍</span>
+                  <span class="side-nav-label">
+                      <span class="side-nav-title">Locations</span>
+                      <span class="side-nav-sub">Browse by location</span>
+                  </span>
+                  <span class="side-nav-caret" aria-hidden="true">›</span>
+              </button>
+
+            <!-- Locations List Panel -->
+            <div id="locationsPanel" class="projects-panel" aria-hidden="true">
+                <div class="projects-panel-head">
+                    <span>Browse by Location</span>
+                    <button id="clearLocationSelection" type="button" class="clear-project-btn" hidden>Clear</button>
+                </div>
+                <input type="text"
+                       id="locationsSearch"
+                       class="locations-search"
+                       placeholder="Search location..."
+                       autocomplete="off"
+                       aria-label="Search locations">
+                <ul id="locationsList" class="projects-tree" role="listbox"></ul>
+                <div id="locationSelectedLabel" class="project-selected-label" hidden></div>
+            </div>
+
+
+
+              <button id="filterBtn" class="side-nav-btn filter-btn">
+                  <span class="side-nav-icon" aria-hidden="true">⚙️</span>
+                  <span class="side-nav-label">
+                      <span class="side-nav-title">Filters</span>
+                      <span class="side-nav-sub">Network · sensor · location</span>
+                  </span>
+                  <span class="side-nav-caret" aria-hidden="true">›</span>
+              </button>
             </div>
 
             <!-- Filter Panel -->
             <div id="filterPanel" class="filter-panel">
 
-                <label>Network</label>
-                <select id="networkFilter">
-                    <option value="">All Networks</option>
-                </select>
+                <!-- <div class="filter-panel-head">
+                    <span class="filter-panel-title">⚙️ Refine results</span>
+                    <span class="filter-panel-sub">Narrow the map by any combination</span>
+                </div> -->
 
-                <label>Sensor</label>
-                <select id="instrumentFilter">
-                    <option value="">All Sensors</option>
-                </select>
+                <div class="filter-field">
+                    <label for="networkFilter">🌐 Network</label>
+                    <select id="networkFilter">
+                        <option value="">All Networks</option>
+                    </select>
+                </div>
 
-                <label>Location</label>
-                <select id="locationFilter">
-                    <option value="">All Locations</option>
-                </select>
+                <div class="filter-field">
+                    <label for="instrumentFilter">🛰️ Sensor</label>
+                    <select id="instrumentFilter">
+                        <option value="">All Sensors</option>
+                    </select>
+                </div>
 
-                <button id="resetFilters" class="reset-btn">
-                    Reset Filters
-                </button>
+                <div class="filter-field">
+                    <label for="locationFilter">📍 Location</label>
+                    <select id="locationFilter">
+                        <option value="">All Locations</option>
+                    </select>
+                </div>
 
             </div>
+
+            <!-- Reset Filters (outside filter panel) -->
+            <button id="resetFilters" class="reset-btn reset-btn-standalone">
+                ↺ Reset Filters
+            </button>
 
             <!-- Helper hint replaces the removed instrument list -->
             <div class="sidebar-hint">
@@ -137,7 +209,7 @@
     <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-credits">
-            <span><b>Developed by: </b>MESONET & MUMBAI RADAR Team (Subrata Kumar Das, Chiranjivi Guttula, Nikhil Krishnakant Kavate)</span>
+            <span><b>Developed by: </b>MESONET & MUMBAI RADAR Team (Nikhil Krishnakant Kavate, Subrata Kumar Das, Chiranjivi Guttula)</span>
         </div>
         <div class="footer-contact">
             <span><b>Address:</b> Indian Institute of Tropical Meteorology (IITM), Dr. Homi Bhabha Road, Pashan, Pune - 411 008, India</span>
@@ -152,7 +224,7 @@
     <script src="https://unpkg.com/topojson-client@3"></script>
 
     <!-- JS File -->
-    <script src="script.js?v=20260628-2"></script>
+    <script src="script.js?v=20260702-2"></script>
 
 </body>
 </html>
