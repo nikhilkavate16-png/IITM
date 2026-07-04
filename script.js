@@ -90,12 +90,14 @@ sidebarToggle.addEventListener("click", () => {
 filterBtn.addEventListener("click", () => {
     const isOpen = filterPanel.classList.toggle("show");
     filterBtn.setAttribute("aria-expanded", String(isOpen));
+    if (isOpen) scrollPanelIntoView(filterBtn, filterPanel);
 });
 
 projectsBtn.addEventListener("click", () => {
     const isOpen = projectsPanel.classList.toggle("show");
     projectsBtn.setAttribute("aria-expanded", String(isOpen));
     projectsPanel.setAttribute("aria-hidden", String(!isOpen));
+    if (isOpen) scrollPanelIntoView(projectsBtn, projectsPanel);
 });
 
 const instrumentsBtn = document.getElementById("instrumentsBtn");
@@ -108,6 +110,7 @@ instrumentsBtn.addEventListener("click", () => {
     const isOpen = instrumentsPanel.classList.toggle("show");
     instrumentsBtn.setAttribute("aria-expanded", String(isOpen));
     instrumentsPanel.setAttribute("aria-hidden", String(!isOpen));
+    if (isOpen) scrollPanelIntoView(instrumentsBtn, instrumentsPanel);
 });
 
 const locationsBtn = document.getElementById("locationsBtn");
@@ -132,6 +135,20 @@ if (locationsBtn) {
         const isOpen = locationsPanel.classList.toggle("show");
         locationsBtn.setAttribute("aria-expanded", String(isOpen));
         locationsPanel.setAttribute("aria-hidden", String(!isOpen));
+        if (isOpen) scrollPanelIntoView(locationsBtn, locationsPanel);
+    });
+}
+
+function scrollPanelIntoView(btn, panel) {
+    const scroller = sidebar;
+    if (!scroller || !btn) return;
+    // Wait for the panel to expand before measuring.
+    requestAnimationFrame(() => {
+        const btnTop = btn.offsetTop;
+        const panelBottom = panel ? panel.offsetTop + panel.offsetHeight : btnTop + btn.offsetHeight;
+        const viewH = scroller.clientHeight;
+        const desiredScroll = Math.max(0, Math.min(btnTop - 8, panelBottom - viewH + 16));
+        scroller.scrollTo({ top: desiredScroll, behavior: "smooth" });
     });
 }
 
@@ -887,9 +904,14 @@ fetch("instruments.json")
             }
 
             const q = locationsSearchQuery || "";
-            const names = q
+            const filteredNames = q
                 ? allNames.filter(n => n.toLowerCase().includes(q))
                 : allNames;
+            const names = [
+                ...filteredNames.filter(n => selectedLocationSet.has(n)).sort((a, b) => a.localeCompare(b)),
+                ...filteredNames.filter(n => !selectedLocationSet.has(n)).sort((a, b) => a.localeCompare(b))
+            ];
+
 
             locationsListEl.innerHTML = "";
             if (names.length === 0) {
